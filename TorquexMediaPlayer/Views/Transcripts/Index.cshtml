@@ -1,0 +1,73 @@
+﻿@model PagedList.IPagedList<TorquexMediaPlayer.Models.Transcript>
+@using PagedList.Mvc;
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+    @using (Html.BeginForm("Index", "Transcripts", FormMethod.Get))
+    {
+        <p>@Html.ActionLink("Upload New File", "Create", null, new { @style = "float:left; display:inline-block" })
+            <div style="float:left; margin-left:10px; margin-right:10px; display:inline-block">|</div>
+           @Html.ActionLink("Check transcription status", "StatusUpdate", null, new { @style = "float:left; display:inline-block" })
+            <div style="float:right; display:inline-block; margin-bottom:10px;">
+                <span style="display:inline-block; ">Find files containing:</span> @Html.TextBox("SearchString", ViewBag.CurrentFilter as string, new { @style = "display:inline-block; width:120px;", @class="form-control" } )
+                <input class="btn btn-default" style="display:inline-block" type="submit" value="Search" />
+            </div>
+        </p>
+    }
+
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.ActionLink("File Name", "Index", new {sortOrder = ViewBag.FileNameSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.ActionLink("Create Time", "Index", new { sortOrder = ViewBag.CreateTimeSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().VBstatus)
+        </th>
+        <th>
+            @Html.ActionLink("Project", "Index", new { sortOrder = ViewBag.ProjectSortParm, currentFilter = ViewBag.CurrentFilter })
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().createby)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Filename)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreateTime)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.VBstatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Project)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.createby)
+        </td>
+        <td>
+@*            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |*@
+            @Html.ActionLink("Play", "Play", new { id = item.Id }, new { @class = "playLink" }) | @Html.ActionLink("Delete", "Delete", new { id=item.Id }, new { @class = "cancelLink" })
+        </td>
+    </tr>
+}
+
+</table>
+<br />
+Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+@Html.PagedListPager(Model, page => Url.Action("Index",
+    new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))

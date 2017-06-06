@@ -1,0 +1,84 @@
+﻿@using TorquexUtilities
+@model TorquexMediaPlayer.Models.Transcript
+
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Transcript</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Filename)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Filename)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.mediaId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.mediaId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Processtime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Processtime)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Project)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Project)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VBstatus)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VBstatus)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Text_Plain)
+        </dt>
+
+        <dd>
+            @{ string textPlain = Model.Text_Plain.Chop(600);}
+            @Html.DisplayFor(model => textPlain)
+        </dd>
+
+
+        <dt>
+            @Html.DisplayNameFor(model => model.createby)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.createby)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

@@ -1,0 +1,109 @@
+﻿@model TorquexMediaPlayer.Models.Transcript
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create</h2>
+
+
+<form method="post" enctype = "multipart/form-data" action="@Url.Action("Upload","Transcripts")">
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Transcript</h4>
+        <div class="form-group">
+            <label for="file" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input type="file" id="file" name="file" multiple class="form-control" /><br />
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="language" class="col-md-2 control-label">Language</label>
+            <div class="col-md-10">
+                <select id="language" name="language" class="form-control">
+                    <option value="en-AU">Select Language</option>
+                    <option value="en-AU">English Australian</option>
+                    <option value="en-US">English US</option>
+                    <option value="en-UK">English UK</option>
+                </select><br />
+            </div>
+        </div>
+        <div class="form-group">
+
+            <label for="custom_vocab" class="col-md-2 control-label">Custom Vocab Terms</label>
+            <div class="col-md-10">
+                <input type="text" id="custom_vocab" name="custom_vocab" class="form-control" /> Enter custom vocab phrases and terms seperated by a semi colon ";"
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="channel_mono" class="col-md-2 control-label">Mono</label>
+            <input type="radio" name="channel" value="mono" id="channel_mono" class="form-control" checked />
+            <label for="channel_stereo" class="col-md-2 control-label">Stereo</label>
+            <input type="radio" name="channel" value="stereo" id="channel_stereo" class="form-control" />
+        </div>
+        <div class="form-group" hidden id="stereo">
+
+            <label for="stereo_channel1" class="col-md-2 control-label">Left Channel</label>
+            <div class="col-md-10">
+                <input type="text" id="stereo_channel1" name="stereo_channel1" value="Agent" class="form-control" />
+            </div>
+            <label for="stereo_channel2" class="col-md-2 control-label">Right Channel</label>
+            <div class="col-md-10">
+                <input type="text" id="stereo_channel2" value="Caller" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+
+            <label for="project" class="col-md-2 control-label">Project Name</label>
+            <div class="col-md-10">
+                <input type="text" id="project" name="project" class="form-control" /> 
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="upload" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input type="submit" id="upload" value="Upload Selected Files" class="btn btn-default" />
+            </div>
+        </div>
+@*        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Filename, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Filename, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Filename, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Text_Sort, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Text_Sort, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Text_Sort, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Project, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Project, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Project, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>*@
+    </div>
+</form>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

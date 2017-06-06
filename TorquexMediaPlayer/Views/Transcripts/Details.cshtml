@@ -1,0 +1,114 @@
+﻿@model TorquexMediaPlayer.Models.Transcript
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Transcript</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Filename)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Filename)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.mediaId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.mediaId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Processtime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Processtime)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreateTime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreateTime)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DirDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DirDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VBstatus)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VBstatus)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.JSON)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.JSON)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Text_Plain)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Text_Plain)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Text_Sort)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Text_Sort)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Project)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Project)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Link)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Link)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.createby)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.createby)
+        </dd>
+
+    </dl>
+</div>
+<p>
+@*    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |*@
+    @Html.ActionLink("Back to List", "Index")
+</p>
