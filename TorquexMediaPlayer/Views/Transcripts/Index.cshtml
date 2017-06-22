@@ -38,7 +38,7 @@
         <th>
             @Html.DisplayNameFor(model => model.First().createby)
         </th>
-        <th></th>
+        <th class="actionLinks"></th><th class="actionLinks"></th></th><th class="actionLinks"></th>
     </tr>
 
 @foreach (var item in Model) {
@@ -58,9 +58,20 @@
         <td>
             @Html.DisplayFor(modelItem => item.createby)
         </td>
-        <td>
-@*            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |*@
-            @Html.ActionLink("Play", "Play", new { id = item.Id }, new { @class = "playLink" }) | @Html.ActionLink("Delete", "Delete", new { id=item.Id }, new { @class = "cancelLink" })
+        @if (item.VBstatus == "finished")
+        {
+            <td class="actionLinks">
+                @Html.ActionLink("Play", "Play", new { id = item.Id }, new { @class = "playLink" })
+            </td>
+        } else
+        {
+            <td class="actionLinks"></td>
+        }
+        <td class="actionLinks">|
+            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "editLink" })
+        </td>
+        <td class="actionLinks">| 
+            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "cancelLink" })
         </td>
     </tr>
 }

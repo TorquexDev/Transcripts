@@ -14,6 +14,9 @@ using PagedList;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage;
 using System.IO;
+using MediaToolkit.Model;
+using MediaToolkit;
+using TorquexUtilities;
 
 namespace TorquexMediaPlayer.Controllers
 {
@@ -84,15 +87,30 @@ namespace TorquexMediaPlayer.Controllers
             Transcript transcript = db.Transcripts.FirstOrDefault(s => s.mediaId == mediaid);
 
             string filepath = Server.MapPath("~/temp/");
-            string fname = mediaid + ".docx";
+            string fname = mediaid;
             string filename = filepath + fname;
 
-            var doc = DocX.Create(filename);
 
-            doc.InsertParagraph(transcript.Text_Plain);
-
-            doc.Save();
-
+            switch (format)
+            {
+                case "rtf":
+                    fname = mediaid + ".docx";
+                    filename = filepath + fname;
+                    var doc = DocX.Create(filename);
+                    doc.InsertParagraph(transcript.Text_Plain);
+                    doc.Save();
+                    break;
+                case "srt":
+                    fname = mediaid + ".srt";
+                    filename = filepath + fname;
+                    System.IO.File.WriteAllText(@filename, transcript.Text_Sort);
+                    break;
+                default:
+                    fname = mediaid + ".txt";
+                    filename = filepath + fname;
+                    System.IO.File.WriteAllText(@filename, transcript.Text_Plain);
+                    break;
+            }
             return File(filename, System.Net.Mime.MediaTypeNames.Application.Octet,fname);
 
 
@@ -113,7 +131,7 @@ namespace TorquexMediaPlayer.Controllers
             return View(transcript);
         }
 
-
+        [AllowAnonymous]
         // GET: Transcripts/Details/5
         public ActionResult Play(int? id)
         {
@@ -167,29 +185,80 @@ namespace TorquexMediaPlayer.Controllers
 
                     HttpPostedFileBase file = httpFiles[i];
                     transcript.Filename = file.FileName;
-                    transcript.mediaId = GetMedia(file, transcript);
 
-                    // reset filestream to 
+                    // Send to Voicebase
+                    transcript.mediaId = GetMedia(file, transcript, formdata.channel, formdata.stereo_channel1, formdata.stereo_channel2);
 
-                    if (file.InputStream.CanSeek)
+                    // Split up files so we can rename and make unique
+
+                    string ext = Path.GetExtension(file.FileName);
+                    string fn = Path.GetFileNameWithoutExtension(file.FileName);
+                    string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
+
+                     // Check if file is wav and convert to mp3
+                    if (ext.ToLower() == ".wav")
                     {
-                        file.InputStream.Seek(0, SeekOrigin.Begin);
+                        // reset filestream to start
+                        if (file.InputStream.CanSeek)
+                        {
+                            file.InputStream.Seek(0, SeekOrigin.Begin);
+                        }
+
+                        // write to local disk
+
+                        string inFile = Server.MapPath("~/temp") + "\\" + fn + random + ext;
+                        string outFile = Server.MapPath("~/temp") + "\\" + fn + random + ".mp3";
+                            file.SaveAs(inFile);
+                            // Free up memory as we don't need this one any more
+                            file.InputStream.Dispose();
+
+                        var inputFile = new MediaFile { Filename = @inFile };
+                        var outputFile = new MediaFile { Filename = @outFile };
+                   
+                        using (var engine = new Engine(Server.MapPath("~/Content/ffmpeg.exe")))
+                        {
+                            engine.Convert(inputFile, outputFile);
+                            file.InputStream.Dispose();
+                        }
+                        string blockName = StringUtils.blockName(outFile);
+                        if (!string.IsNullOrEmpty(blockName))
+                        {
+                            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                            //upload files 
+                            blob.UploadFromFile(outFile);
+                        }
+                        transcript.PlayFile = fn + random + ".mp3";
+
+                        // Clean up files on disk
+
+                        System.IO.File.Delete(@inFile);
+                        System.IO.File.Delete(@outFile);
+
+
                     }
-                    // Save file to blob
-                    //Generates  a blobName 
-                    string blockName = file.FileName;
-                    string[] strName = file.FileName.Split('\\');
-                    if (strName.Length > 0)
+                    else
                     {
-                        blockName = strName[strName.Length - 1];
-                    }
-                    if (!string.IsNullOrEmpty(blockName))
-                    {
-                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
-                        //upload files 
-                        blob.UploadFromStream(file.InputStream);
+                        transcript.PlayFile = fn + random + ext;
+                        // reset filestream to start
+                        if (file.InputStream.CanSeek)
+                        {
+                            file.InputStream.Seek(0, SeekOrigin.Begin);
+                        }
+                        // Save file to blob
+                        //Generates  a blobName 
+                        string blockName = StringUtils.blockName(transcript.PlayFile);
+
+                        if (!string.IsNullOrEmpty(blockName))
+                        {
+                            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                            //upload files 
+                            blob.UploadFromStream(file.InputStream);
+                         }
+
+
                     }
 
+ 
                     // Save to database
                     transcript.createby = User.Identity.Name;
                     transcript.CreateTime = DateTime.Now;
@@ -220,7 +289,7 @@ namespace TorquexMediaPlayer.Controllers
             return RedirectToAction("CheckStatus", "vbCallBack");
         }
 
-        static string GetMedia(HttpPostedFileBase file, Transcript transcript)
+        static string GetMedia(HttpPostedFileBase file, Transcript transcript, string channel, string l_channel, string r_channel)
         {
             var client = new RestClient();
             var token = System.Configuration.ConfigurationManager.AppSettings["VoicebaseToken"];
@@ -261,6 +330,16 @@ namespace TorquexMediaPlayer.Controllers
 
                 }
             }
+
+            if (channel == "stereo")
+            {
+                sconfig.ingest = new cfgingest();
+                sconfig.ingest.channels = new cfgchannels();
+                sconfig.ingest.channels.left = new cfgleft();
+                sconfig.ingest.channels.right = new cfgright();
+                sconfig.ingest.channels.left.speaker = l_channel;
+                sconfig.ingest.channels.right.speaker = r_channel;
+             }
 
             var config_all = new configwrapper();
             config_all.configuration = sconfig;

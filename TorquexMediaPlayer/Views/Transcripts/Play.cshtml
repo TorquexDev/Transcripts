@@ -2,6 +2,7 @@
 
 @{
     ViewBag.Title = "Play";
+    string mediaType;
 }
 
 <link rel="stylesheet" href="/Content/jquery-ui-1.10.4.custom.min.css" />
@@ -31,11 +32,16 @@
         //               You need Flash player 8+ and JavaScript enabled to view this video.
     </div>
 </div>
+
+@if (!Model.Vocabs.IsEmpty())
+{
+<div style="padding:8px; align-content:center;"><b>Custom Vocabs Used : </b>@Html.DisplayFor(modelItem => Model.Vocabs)</div>
+}
 <script type='text/javascript'>
             jQuery(document).ready(function() {
                 jwplayer('jwplayer').setup({
                     primary: "html5",
-                    file: 'https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/' + '@Html.DisplayFor(modelItem => Model.Filename)' ,
+                    file: 'https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/' + '@Html.DisplayFor(modelItem => Model.PlayFile)' ,
                     width: '100%'
                 });
 
@@ -47,8 +53,9 @@
                     mediaId: '@Html.DisplayFor(modelItem => Model.mediaId)' ,
                     token: '_OjQif8F7lFp06d_f2FQPfQzL9cTpUuL0z_aMpy9YN2N_5F6S8bys5ZrfTQVqPoYaBy7FLbuXIo7XZ1zlXLLFQ',
                     localSearch: true,
-                    mediaTypeOverride: 'video'
-    });
+                    @{mediaType = Model.PlayFile.Substring(Model.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video" ;}
+                    mediaTypeOverride: '@mediaType'
+                });
             });
 </script>
 

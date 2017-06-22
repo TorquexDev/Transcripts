@@ -30,6 +30,17 @@ a.playLink {
     text-indent: -9999px; /* hides the link text */
 }
 
+a.editLink {
+    background: url('../images/edit-btn-active.png') no-repeat top left;
+    background-position-y:center;
+    display: inline-block;
+    width: 18px;
+    height: 20px;
+/*   margin-top: 3px;  */
+    text-indent: -9999px; /* hides the link text */
+}
+
+
 a.cancelLink {
     background: url('../images/clear.png') no-repeat top left;
     background-position-y: -12px;
@@ -37,4 +48,23 @@ a.cancelLink {
     width: 30px;
     height: 24px;
     text-indent: -9999px; /* hides the link text */
+}
+
+table tbody td.actionLinks {
+    padding-left: 2px;
+    padding-right: 2px;
+    line-height: 1.428571429;
+    vertical-align: top;
+    white-space: nowrap;
+    border-top: 1px solid #dddddd;
+    width: 1px; /*  force width to size of image */
+}
+
+table thead th.actionLinks {
+    padding-left: 1px;
+    padding-right: 1px;
+    line-height: 1.428571429;
+    vertical-align: top;
+    border-top: 1px solid #dddddd;
+    width: 1px;  /* force width to size of image */
 }
