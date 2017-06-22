@@ -366,6 +366,7 @@
     <Content Include="images\nextkeyword-icon.png" />
     <Content Include="images\play-btn-small.png" />
     <Content Include="images\play-btn.png" />
+    <Content Include="images\playbackspeed_btn.png" />
     <Content Include="images\player_controls_n.png" />
     <Content Include="images\player_controls_n2.png" />
     <Content Include="images\plus-btn-active.png" />
