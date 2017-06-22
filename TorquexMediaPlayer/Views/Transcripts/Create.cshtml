@@ -18,9 +18,9 @@
     <div class="form-horizontal">
         <h4>Transcript</h4>
         <div class="form-group">
-            <label for="file" class="col-md-2 control-label"></label>
+            <label for="file" class="col-md-2 control-label">Files</label>
             <div class="col-md-10">
-                <input type="file" id="file" name="file" multiple class="fileUpload" /><br />
+                <input type="file" id="file" name="file" multiple class="form-control" /><br />
             </div>
         </div>
         <div class="form-group">
@@ -78,6 +78,14 @@
 <div>
     @Html.ActionLink("Back to List", "Index")
 </div>
+
+
+<script type="text/javascript">
+    jQuery(function ($) {
+        $('.fileUpload').fileUploader();
+    });
+</script>
+
 
 <script type="text/javascript">
     function hideStereo() {

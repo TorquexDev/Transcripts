@@ -5,6 +5,14 @@
 *	Version: 1.3
 */
 
+jQuery.fn.extend({
+    live: function (event, callback) {
+        if (this.selector) {
+            jQuery(document).on(event, this.selector, callback);
+        }
+    }
+});
+
 (function($) {
 	$.fileUploader = {version: '1.3', count: 0};
 	$.fn.fileUploader = function(config){
@@ -15,7 +23,7 @@
 			buttonUpload: '#px-submit',
 			buttonClear: '#px-clear',
 			selectFileLabel: 'Select files',
-			allowedExtension: 'jpg|jpeg|gif|png',
+			allowedExtension: 'mp3|wav|mp4|m4v',
 			timeInterval: [1, 2, 4, 2, 1, 5], //Mock percentage for iframe upload
 			percentageInterval: [10, 20, 30, 40, 60, 80],
 			
