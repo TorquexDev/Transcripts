@@ -273,7 +273,6 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\ffmpeg.exe" />
-    <Content Include="Content\fileUploader.css" />
     <Content Include="Content\jquery-ui-1.10.4.custom.min.css" />
     <Content Include="Content\ui-lightness\images\pbar-ani.gif" />
     <Content Include="Content\ui-lightness\images\ui-bg_diagonals-thick_18_b81900_40x40.png" />
@@ -430,7 +429,6 @@
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery-ui-1.8.14.custom.min.js" />
-    <Content Include="Scripts\jquery.fileUploader.js" />
     <Content Include="Scripts\jquery.signalR-2.2.2.js" />
     <Content Include="Scripts\jquery.signalR-2.2.2.min.js" />
     <Content Include="Scripts\jquery.uploadify.js" />
