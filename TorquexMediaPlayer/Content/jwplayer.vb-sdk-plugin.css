@@ -656,7 +656,6 @@
     .vbs-player-control .vbs-playback-speed {
         background: url("../images/playbackspeed_btn.png") no-repeat;
         background-size: 40px 30px;
-        background-color: grey;
         position: relative;
         display: inline-block;
     }
@@ -666,7 +665,7 @@
     position: absolute;
     background: #fff;
     min-width: 50px;
-    margin: -30px 0px 0px 10px;
+    margin: -25px 0px 0px 50px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
@@ -674,8 +673,8 @@
     .vbs-playback-dropdown-content h5 {
         color: black;
         background: #fff;
-        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
         text-align: center;
+        font-size: 12px;
     }
 
     .vbs-playback-dropdown-content h6 {
@@ -683,7 +682,7 @@
         background: #0089c8;
         /* filter: progid:DXImageTransform.Microsoft.gradient(startColorstr= '#0089c8', endColorstr= '#006bb9', GradientType=0);*/
         display: block;
-        margin: 2px 2px 0px 2px;
+        margin: 2px 2px 5px 2px;
         text-align: center;
         text-transform: uppercase;
         font-size: 14px;
@@ -695,13 +694,38 @@
         box-shadow: 0 1px 1px #002e87;
     }
 
-        .vbs-playback-dropdown-content h6:hover {
-            display: block;
-            background: #0069d9;
+    .vbs-playback-dropdown-content .vbs-arrow {
+        top: 31px;
+        left: -33%;
+        border-bottom-color: rgba(0, 0, 0, 0.09);
+        border-width: 11px;
+        border-top-width: 0;
+        transform: rotate(-90deg)
+    }
+
+        .vbs-playback-dropdown-content .vbs-arrow:after {
+            top: 1px;
+            margin-left: -10px;
+            border-bottom-color: #fff;
+            border-width: 10px;
+            border-top-width: 0;
+            content: ' ';
         }
+
+    .vbs-playback-dropdown-content h6:hover {
+        display: block;
+        background: #0069d9;
+    }
 
 .vbs-playback-show {
     display: block;
+}
+
+.vbs-playback-title {
+    color: #999;
+    margin-left: 400px;
+    margin-right: 30px;
+    text-transform: uppercase;
 }
 
 
@@ -5441,6 +5465,44 @@ a.vbs-marker:hover {
     cursor: pointer;
     overflow: visible;
 }
+
+.help_modal {
+    display: none;
+    position: fixed;
+    z-index: 120;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal_contents {
+    background-color: #fefefe;
+    border-radius: 25px;
+    margin: 4% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float:initial right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+
 
 .vbs-aggree-btn {
     background: #9ECB57;

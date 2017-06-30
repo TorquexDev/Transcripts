@@ -105,6 +105,11 @@ namespace TorquexMediaPlayer.Controllers
                     filename = filepath + fname;
                     System.IO.File.WriteAllText(@filename, transcript.Text_Sort);
                     break;
+                case "docd":
+                    fname = mediaid + ".docx";
+                    filename = filepath + fname;
+                    CreateTimeStampWordDoc(filename, transcript.JSON);
+                    break;
                 default:
                     fname = mediaid + ".txt";
                     filename = filepath + fname;
@@ -115,6 +120,74 @@ namespace TorquexMediaPlayer.Controllers
 
 
         }
+
+        private Boolean CreateTimeStampWordDoc(string filename, string jsonTranscript)
+        {
+            var json_serializer = new JavaScriptSerializer();
+            int splitTime = 180000;
+            TimeSpan ts;
+
+            Media VBJson = json_serializer.Deserialize<Media>(jsonTranscript);
+
+            DocX doc = DocX.Create(filename);
+            Paragraph p;
+
+            doc.MarginLeft = (float)1;
+            doc.MarginRight = (float)1;
+            doc.MarginTop = (float)1;
+            doc.MarginBottom = (float)1;
+
+            p = doc.InsertParagraph();
+            p.IndentationHanging = (float)1.5;
+            p.Append("[00:00:00]\t").FontSize(9);
+            Boolean bSplit = false;
+            Boolean bDone = true;
+
+            foreach (Words word in VBJson.media.transcripts.latest.words)
+            {
+                if ((!bSplit) && (!bDone) && ((word.s % splitTime) < 10000))
+                {
+                    bSplit = true;
+                }
+
+                if (bDone && ((word.s % splitTime) > 10000))
+                {
+                    bDone = false;
+                    bSplit = false;
+                }
+
+                if (word.m != null && word.m == "punc")
+                {
+                    p.Append(word.w);
+                    if (bSplit && !bDone)
+                    {
+                        p.Append("\n\n");
+                        p = doc.InsertParagraph();
+                        p.IndentationHanging = (float)1.5;
+                        ts = TimeSpan.FromMilliseconds((double)word.s);
+                        p.Append("[" + ts.ToString(@"hh\:mm\:ss") + "]\t").FontSize(9);
+                        bDone = true;
+                    }
+                }
+                else if (word.m != null && word.m == "turn")
+                {
+                    p.Append("\n\n");
+                    p = doc.InsertParagraph();
+                    p.IndentationHanging = (float)1.5;
+                    ts = TimeSpan.FromMilliseconds((double)word.s);
+                    p.Append("[" + ts.ToString(@"hh\:mm\:ss") + "] " + word.w + "\t").FontSize(9);
+                }
+                else
+                {
+                    p.Append(" " + word.w);
+                }
+            }
+
+            doc.Save();
+            return true;
+        }
+
+
 
         // GET: Transcripts/Details/5
         public ActionResult Details(int? id)
