@@ -131,15 +131,28 @@ namespace TorquexMediaPlayer.Controllers
 
             DocX doc = DocX.Create(filename);
             Paragraph p;
-
-            doc.MarginLeft = (float)1;
-            doc.MarginRight = (float)1;
-            doc.MarginTop = (float)1;
-            doc.MarginBottom = (float)1;
+            int i = 0;
+            Boolean bDiary = false;
 
             p = doc.InsertParagraph();
-            p.IndentationHanging = (float)1.5;
-            p.Append("[00:00:00]\t").FontSize(9);
+
+            // Check the first 50 words to see if diarization is on
+
+            foreach (Words word in VBJson.media.transcripts.latest.words)
+            {
+                i++;
+                if (word.m != null && word.m == "turn")
+                {
+                    bDiary = true;
+                    break;
+                }
+                if (i > 50)
+                {
+                    p.Append("[00:00:00]\n").FontSize(9);
+                    break;
+                }
+            }
+
             Boolean bSplit = false;
             Boolean bDone = true;
 
@@ -159,23 +172,21 @@ namespace TorquexMediaPlayer.Controllers
                 if (word.m != null && word.m == "punc")
                 {
                     p.Append(word.w);
-                    if (bSplit && !bDone)
+                    if (bSplit && !bDone && !bDiary)
                     {
-                        p.Append("\n\n");
+                        p.Append("\n");
                         p = doc.InsertParagraph();
-                        p.IndentationHanging = (float)1.5;
                         ts = TimeSpan.FromMilliseconds((double)word.s);
-                        p.Append("[" + ts.ToString(@"hh\:mm\:ss") + "]\t").FontSize(9);
+                        p.AppendLine("[" + ts.ToString(@"hh\:mm\:ss") + "]\n").FontSize(9);
                         bDone = true;
                     }
                 }
                 else if (word.m != null && word.m == "turn")
                 {
-                    p.Append("\n\n");
+                    p.Append("\n");
                     p = doc.InsertParagraph();
-                    p.IndentationHanging = (float)1.5;
                     ts = TimeSpan.FromMilliseconds((double)word.s);
-                    p.Append("[" + ts.ToString(@"hh\:mm\:ss") + "] " + word.w + "\t").FontSize(9);
+                    p.Append("[" + ts.ToString(@"hh\:mm\:ss") + "] " + word.w + "\n").FontSize(9);
                 }
                 else
                 {
