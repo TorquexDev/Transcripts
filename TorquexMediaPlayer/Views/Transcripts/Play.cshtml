@@ -27,6 +27,41 @@
 
 <h2>Torquex Media Player</h2>
 
+
+    <button id="helpbutton" class="help_btn" style="float:right">help</button>
+
+    <div id="helpmodal" class="help_modal">
+        <div class="modal_contents">
+            <span class="close">
+                &times;
+            </span>
+            <h4 style="text-decoration:underline; float:initial" >HELP CONTENTS</h4>
+            <p>This page allows you to <br /> 1.Listen and watch your media file <br />2. It displays a set of generated keywords <br />3. It allows to access your transcribed texts <br />4. Also you will be able to download your transcribed texts.<br />5.Allows you to search through the transcript</p>
+            <p><img src="~/images/play-btn.png" />&nbsp&nbsp Play button allows you to play your media file"</p>
+            <p><img src="~/images/back-btn.png" />&nbsp&nbsp This button allows you to skip 10 seconds backwards"</p>
+            <p><img src="~/images/playbackspeed_btn.png"/>&nbsp&nbsp Playback Speed button allows you to play in 1.5times or 2 times the speed of the media file"</p>
+            <p><img src="~/images/keyword_display.png"/><br />When you select a keyword from the list of automatically generated keywords there will be a set of markers below the slider like the image provided below <br /><img src="~/images/help_slider.png" /> </p>
+            <p><img src="~/images/nextkeyword-button-40x34.png"/>&nbsp&nbsp This button allows you to jump to the next keyword marked </p>
+            <p>Use the provided search bar for searching through the transcripts &nbsp&nbsp<img style="width:60%;height:60%" src="~/images/help_search_bar.png" /></p>
+            <p><img src="~/images/print-icon.png" />&nbsp&nbsp This button allows you to print your transcript</p>
+            <p><img src="~/images/reader-icon.png" />&nbsp&nbsp Reader Button maximizes your transcript and makes it easy for you to read</p>
+            <div><img src="~/images/help_downloadTranscript.png" /><p>Click on the download transcript button to display the available formats and click on your desired format to download your transcript</p></div>            
+            
+        </div>
+    </div>
+    <script type="text/javascript">
+        var modal = document.getElementById('helpmodal');
+        var helpbtn = document.getElementById("helpbutton");
+        var span = document.getElementsByClassName("close")[0];
+        helpbtn.onclick = function () {
+            modal.style.display = "block";
+        }
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+     </script>
+
+
 <div class="content">
     <div id="jwplayer">
         //               You need Flash player 8+ and JavaScript enabled to view this video.
@@ -35,7 +70,7 @@
 
 @if (!Model.Vocabs.IsEmpty())
 {
-<div style="padding:8px; align-content:center;"><b>Custom Vocabs Used : </b>@Html.DisplayFor(modelItem => Model.Vocabs)</div>
+    <div style="padding:8px; align-content:center;"><b>Custom Vocabs Used : </b>@Html.DisplayFor(modelItem => Model.Vocabs)</div>
 }
 <script type='text/javascript'>
             jQuery(document).ready(function() {
@@ -54,10 +89,11 @@
                     token: '_OjQif8F7lFp06d_f2FQPfQzL9cTpUuL0z_aMpy9YN2N_5F6S8bys5ZrfTQVqPoYaBy7FLbuXIo7XZ1zlXLLFQ',
                     localSearch: true,
                     @{mediaType = Model.PlayFile.Substring(Model.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video" ;}
-                    mediaTypeOverride: '@mediaType'
+                   mediaTypeOverride: '@mediaType'
                 });
             });
 </script>
+
 
 <p>
     @*    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |*@
