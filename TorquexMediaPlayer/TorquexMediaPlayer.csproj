@@ -345,6 +345,9 @@
     <Content Include="images\help-btn-active.png" />
     <Content Include="images\help-btn.png" />
     <Content Include="images\help-icon-sprite.png" />
+    <Content Include="images\help_downloadTranscript.png" />
+    <Content Include="images\help_search_bar.png" />
+    <Content Include="images\help_slider.png" />
     <Content Include="images\icon-cart-white%402x.png" />
     <Content Include="images\icon-comment%402x.png" />
     <Content Include="images\icon-edit%402x.png" />
@@ -355,6 +358,7 @@
     <Content Include="images\icon-print%402x.png" />
     <Content Include="images\icon-search%402x.png" />
     <Content Include="images\keywords_sort.png" />
+    <Content Include="images\keyword_display.png" />
     <Content Include="images\marker_mask.png" />
     <Content Include="images\mouse-left-btn.png" />
     <Content Include="images\nav-swin-logo-tall.png" />
