@@ -84,15 +84,21 @@
                 jQuery('#jwplayer').voicebase({
                     playerId: 'jwplayer',
                     playerType: 'jwplayer',
-                    apiUrl: 'https://apis.voicebase.com/v2-beta/',
-                    apiVersion: '2.0',
+//                    apiUrl: 'https://apis.voicebase.com/v2-beta/',
+//                    apiVersion: '2.0',
+                    localData: JSON.parse(htmlDecode('@Model.JSON')),
                     mediaId: '@Html.DisplayFor(modelItem => Model.mediaId)' ,
                     token: '_OjQif8F7lFp06d_f2FQPfQzL9cTpUuL0z_aMpy9YN2N_5F6S8bys5ZrfTQVqPoYaBy7FLbuXIo7XZ1zlXLLFQ',
                     localSearch: true,
                     @{mediaType = Model.PlayFile.Substring(Model.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video" ;}
-                   mediaTypeOverride: '@mediaType'
+                    mediaTypeOverride: '@mediaType'
                 });
-            });
+        });
+
+            function htmlDecode(value) {
+                return $("<textarea/>").html(value).text();
+            }
+
 </script>
 
 

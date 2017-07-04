@@ -14,6 +14,7 @@ namespace TorquexMediaPlayer.Models
         public string stereo_channel1 { get; set; }
         public string stereo_channel2 { get; set; }
         public string project { get; set; }
+        public bool diarization { get; set; }
 
     }
 }

@@ -22,6 +22,14 @@ namespace TorquexMediaPlayer.Controllers
 {
     public class TranscriptsController : Controller
     {
+
+        private List<Words> wordlist = new List<Words>();
+        private Media VBJson;
+        private Media JSONout;
+        private Words word;
+        private Words wordout;
+
+
         private TranscriptDBContext db = new TranscriptDBContext();
 
         // GET: Transcripts
@@ -228,6 +236,11 @@ namespace TorquexMediaPlayer.Controllers
             {
                 return HttpNotFound();
             }
+
+            if (transcript.Diarization)
+            {
+                transcript.JSON = diarize(transcript.JSON);
+            }
             return View(transcript);
         }
 
@@ -266,6 +279,7 @@ namespace TorquexMediaPlayer.Controllers
                     transcript.Project = formdata.project;
                     transcript.Vocabs = formdata.custom_vocab;
                     transcript.Channels = formdata.channel;
+                    if (formdata.channel == "mono") transcript.Diarization = formdata.diarization;
 
                     HttpPostedFileBase file = httpFiles[i];
                     transcript.Filename = file.FileName;
@@ -391,6 +405,7 @@ namespace TorquexMediaPlayer.Controllers
             sconfig.language = transcript.Language;
             sconfig.transcripts = new cfgtranscripts();
             sconfig.transcripts.engine = "premium";
+            
 
             // If custom vocabs set clean up and pass in
             if (!string.IsNullOrEmpty(transcript.Vocabs))
@@ -399,7 +414,7 @@ namespace TorquexMediaPlayer.Controllers
                     string[] terms = transcript.Vocabs.Trim().Split(';');
                     cfgvocabs vcab = new cfgvocabs();
                     vcab.terms = new List<string>();
-                    for (int x = 0; x < terms.Length - 1; x = x + 1)
+                    for (int x = 0; x < terms.Length; x = x + 1)
                     {
                         terms[x] = terms[x].Trim();
                         if (terms[x].Length > 0)
@@ -423,7 +438,11 @@ namespace TorquexMediaPlayer.Controllers
                 sconfig.ingest.channels.right = new cfgright();
                 sconfig.ingest.channels.left.speaker = l_channel;
                 sconfig.ingest.channels.right.speaker = r_channel;
-             }
+             } else if (transcript.Diarization)
+            {
+                sconfig.ingest = new cfgingest();
+                sconfig.ingest.diarization = true;
+            }
 
             var config_all = new configwrapper();
             config_all.configuration = sconfig;
@@ -502,6 +521,113 @@ namespace TorquexMediaPlayer.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+
+        private string diarize(string JSON)
+        {
+
+            int min;
+            int sec;
+            Diarization speaker;
+            Words nextword;
+            string rJSON = JSON;
+            //            txbJSON.Text = rJSON;
+            try
+            {
+                var json_serializer1 = new JavaScriptSerializer();
+                var json_serializer2 = new JavaScriptSerializer();
+                VBJson = json_serializer1.Deserialize<Media>(rJSON);
+                JSONout = json_serializer2.Deserialize<Media>(rJSON);
+                JSONout.media.transcripts.latest.words = wordlist.ToArray();
+                int diarycounter = 0;
+                int wordcounter = 0;
+                int outcounter = 0;
+                int numwords = VBJson.media.transcripts.latest.words.Count();
+                word = VBJson.media.transcripts.latest.words[0];
+                nextword = VBJson.media.transcripts.latest.words[1];
+                speaker = VBJson.media.transcripts.latest.diarization[diarycounter];
+                string lastspeaker = speaker.speakerlabel;
+
+                while (wordcounter<numwords)
+                {
+                    word = VBJson.media.transcripts.latest.words[wordcounter];
+                    if (numwords > word.p + 1)
+                    {
+                        nextword = VBJson.media.transcripts.latest.words[word.p + 1];
+                    }
+
+                    while(word.s > speaker.start)
+                    {
+                        diarycounter++;
+                        speaker = VBJson.media.transcripts.latest.diarization[diarycounter];
+                    }
+
+
+                    if (word.s <= speaker.start && nextword.s >= speaker.start)
+                    {
+                        diarycounter++;
+                        if (word.m != null && word.m == "punc")
+                        {
+                            wordcounter++;
+                            wordout = (Words)word.Clone(); ;
+                            wordout.p = outcounter;
+                            wordlist.Add(wordout);
+                            outcounter++;
+                        }
+                        else if (nextword.m != null && nextword.m == "punc")
+                        {
+                            wordout = (Words)word.Clone();
+                            wordout.p = outcounter;
+                            wordlist.Add(wordout);
+                            outcounter++;
+                            wordout = (Words)nextword.Clone(); ;
+                            wordout.p = outcounter;
+                            wordlist.Add(wordout);
+                            outcounter++;
+                            wordcounter++;
+                            wordcounter++;
+                        }
+                        word = VBJson.media.transcripts.latest.words[wordcounter];
+                        min = (int)Decimal.Truncate(word.s / 1000 / 60);
+                        sec = (int)((word.s / 1000) - (min * 60));
+                        wordout = (Words)word.Clone();
+                        wordout.p = outcounter;
+                        wordout.e = wordout.s + 1000;
+                        wordout.w = speaker.gender + "-" + speaker.speakerlabel + " : ";
+                        wordout.m = "turn";
+                        wordlist.Add(wordout);
+                        outcounter++;
+                        wordout = (Words)word.Clone();
+                        wordout.p = outcounter;
+                        wordlist.Add(wordout);
+                        outcounter++;
+
+                        wordcounter++;
+                        speaker = VBJson.media.transcripts.latest.diarization[diarycounter];
+                    }
+                    else
+                    {
+
+                        wordcounter++;
+                        wordout = (Words)word.Clone();
+                        wordout.p = outcounter;
+                        wordlist.Add(wordout);
+                        outcounter++;
+
+                    }
+
+                }
+            }
+            catch (Exception)
+            {
+                //                            throw;
+            }
+
+           
+            JSONout.media.transcripts.latest.words = wordlist.ToArray();
+            var sJSONout = new JavaScriptSerializer().Serialize(JSONout);
+            return sJSONout;
         }
     }
 }
