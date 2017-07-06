@@ -4358,16 +4358,20 @@ voiceBase = (function(VB, $) {
                 });
 
                 // submit search form
-                VB.helper.find('#vbs-search-form').on('submit', function() {
+                VB.helper.find('#vbs-search-form').on('submit', function(event) {
+
+                    event.preventDefault();
+//                    event.stopPropagation();
                     me.submitSearchForm();
-					var words = VB.keywords.view.getSearchWordsArray();
+                    
+/*					var words = VB.keywords.view.getSearchWordsArray();
 					if (words.length > 0) {
 						var arrayLength = words.length;
 						for (var i = 0; i < arrayLength; i++) {
 							dataLayer.push({'Search_Word': words[i], 'event' : 'searchClick'});
 						}
 					} 
-                    return false;
+                    return false;*/
                 });
 
                 // click unquote button
@@ -4719,7 +4723,7 @@ voiceBase = (function(VB, $) {
 
             onAddKeyword: function (event, $elem) {
                 event.preventDefault();
-                VB.api.addKeywords($elem.data('data-kwa'), $elem.data('data-kwt'));
+ //               VB.api.addKeywords($elem.data('data-kwa'), $elem.data('data-kwt'));
             }
 
         }

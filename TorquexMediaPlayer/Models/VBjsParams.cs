@@ -112,4 +112,6 @@ namespace TorquexMediaPlayer.Models
         //        public string media { get; set; }
         public MediaResponse media { get; set; }
     }
+
+
 }

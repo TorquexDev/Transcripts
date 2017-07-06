@@ -259,3 +259,5 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/TorquexMediaPlayer/temp/C100000000017853_03fjdd3j.mp3
+/TorquexMediaPlayer/temp/C100000000017853_03fjdd3j.wav
