@@ -22,6 +22,7 @@ namespace TorquexMediaPlayer.Models
         [DisplayName("Status")]
         public string VBstatus { get; set; }
         public string JSON { get; set; }
+        [DisplayName("Transcript")]
         public string Text_Plain { get; set; }
         public string Text_Sort { get; set; }
         public string Project { get; set; }

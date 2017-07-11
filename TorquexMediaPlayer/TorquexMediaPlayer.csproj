@@ -331,6 +331,7 @@
     <Content Include="images\icon-search%402x.png" />
     <Content Include="images\keywords_sort.png" />
     <Content Include="images\keyword_display.png" />
+    <Content Include="images\logo_torquex.png" />
     <Content Include="images\marker_mask.png" />
     <Content Include="images\mouse-left-btn.png" />
     <Content Include="images\nav-swin-logo-tall.png" />
@@ -380,6 +381,7 @@
     <Content Include="images\timeline-comment%402x-right.png" />
     <Content Include="images\timeline-comment%402x.png" />
     <Content Include="images\title-bg.png" />
+    <Content Include="images\torquex_icon.png" />
     <Content Include="images\trash-btn-active.png" />
     <Content Include="images\trash-btn-light.png" />
     <Content Include="images\trash-btn.png" />
