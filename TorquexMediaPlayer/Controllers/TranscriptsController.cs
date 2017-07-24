@@ -374,6 +374,32 @@ namespace TorquexMediaPlayer.Controllers
 
         }
 
+        [HttpPost]
+        public ContentResult UploadFiles()
+        {
+            var r = new List<UploadFilesResult>();
+
+            foreach (string file in Request.Files)
+            {
+                HttpPostedFileBase hpf = Request.Files[file] as HttpPostedFileBase;
+                if (hpf.ContentLength == 0)
+                    continue;
+
+                string savedFileName = Path.Combine(Server.MapPath("~/App_Data"), Path.GetFileName(hpf.FileName));
+                hpf.SaveAs(savedFileName); // Save the file
+
+                r.Add(new UploadFilesResult()
+                {
+                    Name = hpf.FileName,
+                    Length = hpf.ContentLength,
+                    Type = hpf.ContentType
+                });
+            }
+            // Returns json
+            return Content("{\"name\":\"" + r[0].Name + "\",\"type\":\"" + r[0].Type + "\",\"size\":\"" + string.Format("{0} bytes", r[0].Length) + "\"}", "application/json");
+        }
+
+
         public ActionResult StatusUpdate()
         {
             return RedirectToAction("CheckStatus", "vbCallBack");
@@ -469,11 +495,17 @@ namespace TorquexMediaPlayer.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Filename,mediaId,Processtime,CreateTime,DirDate,VBstatus,JSON,Text_Plain,Text_Sort,Project,Link,createby,Language,Channels,Vocab")] Transcript transcript)
+        public ActionResult Edit( Transcript transcript)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(transcript).State = EntityState.Modified;
+
+                Transcript updatedtrans = (from s in db.Transcripts
+                                          where s.Id == transcript.Id
+                                          select s).FirstOrDefault();
+                updatedtrans.Filename = transcript.Filename;
+                updatedtrans.Project = transcript.Project;
+                db.Entry(updatedtrans).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }

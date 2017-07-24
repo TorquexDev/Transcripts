@@ -42,7 +42,7 @@ var voiceBase = (function($) {
             favorite: 0,
             help: 0,
             evernote: !0,
-            edit: !1,
+            edit: !0,
             print: !0,
             orderTranscript: 0,
             prev: !0,
@@ -142,7 +142,7 @@ var voiceBase = (function($) {
         markersInNativeTimeline: !1,
         cssPathForPlayerFrame: 'css/vbs-kaltura-iframe.css',
         modalErrors: !1,
-        modalSave: !1,
+        modalSave: !0,
         nativePlaylist: !0,
         restrictions: [],
         ready: function () {}
@@ -273,7 +273,7 @@ var voiceBase = (function($) {
                 VB.settings.localSearch = true;
             }
             VB.settings.showCommentsBlock = false;
-            VB.settings.vbsButtons.edit = false;
+            VB.settings.vbsButtons.edit = true;
             VB.settings.vbsButtons.downloadMedia = false;
             VB.settings.vbsButtons.downloadTranscript = true;
             VB.settings.vbsButtons.favorite = false;
@@ -307,7 +307,7 @@ var voiceBase = (function($) {
 
         // Restrictions of token
         if(VB.settings.restrictions.length > 0) {
-            VB.settings.vbsButtons.edit = VB.settings.restrictions.indexOf('updateTranscript') > -1;
+//            VB.settings.vbsButtons.edit = VB.settings.restrictions.indexOf('updateTranscript') > -1;
             VB.settings.editKeywords = VB.settings.restrictions.indexOf('manageKeywords') > -1;
             VB.settings.vbsButtons.remove = VB.settings.restrictions.indexOf('deleteFile') > -1;
             VB.settings.vbsButtons.share = VB.settings.restrictions.indexOf('manageShares') > -1;
