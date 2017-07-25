@@ -212,6 +212,7 @@
     <Compile Include="Controllers\HelloWorldController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\ProjectsController.cs" />
     <Compile Include="Controllers\TranscriptsController.cs" />
     <Compile Include="Controllers\vbCallBackController.cs" />
     <Compile Include="Global.asax.cs">
@@ -236,6 +237,7 @@
     <Compile Include="Models\FileUpload.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Project.cs" />
     <Compile Include="Models\Transcript.cs" />
     <Compile Include="Models\VBjsParams.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -558,9 +560,15 @@
     <Content Include="Views\Transcripts\Index.cshtml" />
     <Content Include="Views\Transcripts\Play.cshtml" />
     <Content Include="Views\vbCallBack\Index.cshtml" />
+    <Content Include="Views\Projects\Create.cshtml" />
+    <Content Include="Views\Projects\Delete.cshtml" />
+    <Content Include="Views\Projects\Details.cshtml" />
+    <Content Include="Views\Projects\Edit.cshtml" />
+    <Content Include="Views\Projects\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="images\ProjectLogos\" />
     <Folder Include="temp\" />
   </ItemGroup>
   <ItemGroup>

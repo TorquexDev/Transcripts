@@ -39,5 +39,7 @@ namespace TorquexMediaPlayer.Models
     public class TranscriptDBContext : DbContext
     {
         public DbSet<Transcript> Transcripts { get; set; }
+
+        public System.Data.Entity.DbSet<TorquexMediaPlayer.Models.Project> Projects { get; set; }
     }
 }
