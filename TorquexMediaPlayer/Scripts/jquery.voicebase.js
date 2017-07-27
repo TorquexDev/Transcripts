@@ -1073,7 +1073,7 @@ voiceBase = (function(VB, $) {
             var ie9 = (VB.common.isIe() === 9);
 
             jQuery.ajax({
-                url: VB.settings.apiUrl,
+                url: "/Transcripts/Update",
                 type: 'POST',
                 data: parameters,
                 dataType: (ie9) ? "jsonp" : "json"
@@ -6797,7 +6797,30 @@ voiceBase = (function(VB, $) {
                 var div = document.createElement("div");
                 div.innerHTML = html;
                 var content = div.textContent || div.innerText || "";
-                VB.api.saveTrancript(content.trim());
+
+                var x = document.getElementsByClassName("vbs-wd");
+                var i;
+                var param = {}
+                var words = [];
+                for (i = 0; i < x.length; i++) {
+
+                    var word = {}
+                    word["p"] = i;
+                    word["s"] = x[i].getAttribute("t");
+                    if (x[i].innerText) {
+                        word["w"] = x[i].innerText;
+                    }
+                    else
+                        if (x[i].textContent) {
+                            word["w"] = x[i].textContent;
+                        }
+                    words.push(word);
+                }
+
+                param["mediaId"] = VB.settings.mediaId;
+                param["words"] = words;
+
+                VB.api.saveTrancript(words);
 
                 var $save_popup_wrapper = VB.helper.find('.vbs-save-popup-wrapper');
                 if(VB.settings.modalSave) {

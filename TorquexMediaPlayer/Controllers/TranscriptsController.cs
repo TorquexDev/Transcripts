@@ -568,6 +568,13 @@ namespace TorquexMediaPlayer.Controllers
             return View(transcript);
         }
 
+        [HttpPost]
+        public ActionResult Update(PUpload updata)
+        {
+ //           var indata = System.Web.Helpers.Json.Decode(updata);
+            return Json("Success");
+        }
+
         // GET: Transcripts/Delete/5
         public ActionResult Delete(int? id)
         {

@@ -20,6 +20,21 @@ namespace TorquexMediaPlayer.Models
         public string m { get; set; }
     }
 
+    public class PWords 
+    {
+        public int p { get; set; }
+        public int s { get; set; }
+        public string w { get; set; }
+    }
+
+    public class PUpload
+    {
+        public string mediaId { get; set; }
+        public string action { get; set; }
+        public PWords[] content { get; set; }
+    }
+
+
     public class Diarization
     {
         public string speakerlabel { get; set; }
