@@ -26,6 +26,7 @@ namespace TorquexMediaPlayer.Models
         public string Text_Plain { get; set; }
         public string Text_Sort { get; set; }
         public string Project { get; set; }
+        public int? ProjectId { get; set; }
         public string Link { get; set; }
 
         [DisplayName("Submitted By")]

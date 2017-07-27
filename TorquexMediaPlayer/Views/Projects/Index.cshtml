@@ -26,6 +26,7 @@
         </th>
         <th class="actionLinks"></th>
         <th class="actionLinks"></th>
+        <th class="actionLinks"></th>
     </tr>
 
 @foreach (var item in Model) {
@@ -41,6 +42,9 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.CreateDate)
+        </td>
+        <td class="actionLinks">
+            @Html.ActionLink("Unit", "Unit", new { id = item.ID }, new { @class = "playLink" })
         </td>
         <td class="actionLinks">
             |

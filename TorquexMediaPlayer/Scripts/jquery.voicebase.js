@@ -273,7 +273,7 @@ var voiceBase = (function($) {
                 VB.settings.localSearch = true;
             }
             VB.settings.showCommentsBlock = false;
-            VB.settings.vbsButtons.edit = true;
+//            VB.settings.vbsButtons.edit = true;
             VB.settings.vbsButtons.downloadMedia = false;
             VB.settings.vbsButtons.downloadTranscript = true;
             VB.settings.vbsButtons.favorite = false;

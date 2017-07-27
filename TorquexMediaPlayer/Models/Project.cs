@@ -21,10 +21,13 @@ namespace TorquexMediaPlayer.Models
 
     public class ProjectUpload
     {
-        [Required(ErrorMessage = "Please Upload Logo Image File")]
         [Display(Name = "Upload File")]
         [ValidateFile]
         public HttpPostedFileBase file { get; set; }
+
+        public string PageLogo { get; set; }
+        public int ID { get; set; }
+
         [Required(ErrorMessage = "Please Enter a Short Name for this Unit")]
         [Display(Name = "Unit Name")]
         public string ProjectName { get; set; }
@@ -40,6 +43,28 @@ namespace TorquexMediaPlayer.Models
 
     }
 
+    public class PublicProject
+    {
+        public string PageLogo { get; set; }
+        public int ID { get; set; }
+
+        public string ProjectName { get; set; }
+        public string DeptName { get; set; }
+
+        public string PageTitle { get; set; }
+
+        public string PageFooter { get; set; }
+
+        public List<Transcript> Transcripts { get; set; }
+    }
+
+    public class ProjectTranscript
+    {
+        public Transcript transcript { get; set; }
+        public string PageLogo { get; set; }
+    }
+
+
     public class ValidateFileAttribute : ValidationAttribute
     {
         public override bool IsValid(object value)
@@ -48,10 +73,11 @@ namespace TorquexMediaPlayer.Models
             string[] AllowedFileExtensions = new string[] { ".jpg", ".gif", ".png" };
 
             var file = value as HttpPostedFileBase;
+            string filename = file.FileName.ToLower();
 
             if (file == null)
-                return false;
-            else if (!AllowedFileExtensions.Contains(file.FileName.Substring(file.FileName.LastIndexOf('.'))))
+                return true;
+            else if (!AllowedFileExtensions.Contains(filename.Substring(filename.LastIndexOf('.'))))
             {
                 ErrorMessage = "Please upload Your Logo Image of type: " + string.Join(", ", AllowedFileExtensions);
                 return false;

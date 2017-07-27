@@ -34,8 +34,8 @@
         <div class="form-group">
             @Html.LabelFor(model => model.Project, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Project, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Project, "", new { @class = "text-danger" })
+                <input type="hidden" id="ProjectId" name="ProjectId" value="@Html.ValueFor(model => model.ProjectId)"/>
+                @Html.DropDownList("projectList", (IEnumerable<SelectListItem>)ViewBag.projectList, string.Empty, new  { @class = "form-control", onchange= "changeProject()" } )
             </div>
         </div>
 
@@ -93,6 +93,20 @@
 <div>
     @Html.ActionLink("Back to List", "Index")
 </div>
+
+<script type="text/javascript">
+    function changeProject() {
+        var pId = $('#projectList').val();
+        $('#ProjectId').val(pId);
+    }
+
+    $(document).ready(function () {
+        var pId = $('#ProjectId').val();
+        $('#projectList').val(pId);
+    });
+
+
+</script>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

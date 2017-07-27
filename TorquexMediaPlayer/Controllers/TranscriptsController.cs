@@ -240,6 +240,14 @@ namespace TorquexMediaPlayer.Controllers
         // GET: Transcripts/Create
         public ActionResult Create()
         {
+            var projects = db.Projects.Where(s => s.CreateBy.Equals(User.Identity.Name))
+                                        .Select(s => new { s.ID, s.ProjectName })
+                                        .OrderBy(s => s.ProjectName)
+                                        .ToList();
+ //           var formdata = new FileUpload();
+            ViewBag.projectList = new SelectList(projects, "ID", "ProjectName"); 
+
+
             return View();
         }
 
@@ -269,6 +277,7 @@ namespace TorquexMediaPlayer.Controllers
 
                     transcript.Language = formdata.language;
                     transcript.Project = formdata.project;
+                    //transcript.ProjectId = formdata.projectId;
                     transcript.Vocabs = formdata.custom_vocab;
                     transcript.Channels = formdata.channel;
                     if (formdata.channel == "mono") transcript.Diarization = formdata.diarization;
@@ -348,7 +357,40 @@ namespace TorquexMediaPlayer.Controllers
 
                     }
 
- 
+                    if (formdata.projectList != null)
+                    {
+                        if (formdata.projectList > 0)
+                        {
+                            transcript.ProjectId = formdata.projectList;
+                            var project = db.Projects.Where(s => s.ID == formdata.projectList)
+                                        .Select(s => new { s.ProjectName })
+                                        .ToList();
+                            if (project.Count == 1) transcript.Project = project[0].ProjectName;
+
+                        }
+                    } else if (formdata.project != null)
+                    {
+                        var project = db.Projects.Where(s => s.ProjectName.Equals(formdata.project) && s.CreateBy.Equals(User.Identity.Name))
+                                    .Select(s => new { s.ID })
+                                    .ToList();
+                        if (project.Count == 1)
+                        {
+                            transcript.ProjectId = project[0].ID;
+                        } else
+                        {
+                            var projectNew = new Project();
+                            projectNew.CreateDate = DateTime.Now;
+                            projectNew.ProjectName = formdata.project;
+                            projectNew.CreateBy = User.Identity.Name;
+                            db.Projects.Add(projectNew);
+                            db.SaveChanges();
+                            transcript.ProjectId = projectNew.ID;
+                        }
+
+                    }
+
+
+
                     // Save to database
                     transcript.createby = User.Identity.Name;
                     transcript.CreateTime = DateTime.Now;
@@ -487,6 +529,16 @@ namespace TorquexMediaPlayer.Controllers
             {
                 return HttpNotFound();
             }
+            var projects = db.Projects.Where(s => s.CreateBy.Equals(User.Identity.Name))
+                                        .Select(s => new { s.ID, s.ProjectName })
+                                        .OrderBy(s => s.ProjectName)
+                                        .ToList();
+            //           var formdata = new FileUpload();
+            ViewBag.projectList = new SelectList(projects, "ID", "ProjectName");
+//            ViewBag.projectList.SelectedValue = transcript.ProjectId;
+
+
+
             return View(transcript);
         }
 
@@ -504,7 +556,11 @@ namespace TorquexMediaPlayer.Controllers
                                           where s.Id == transcript.Id
                                           select s).FirstOrDefault();
                 updatedtrans.Filename = transcript.Filename;
-                updatedtrans.Project = transcript.Project;
+                var project = db.Projects.Where(s => s.ID == transcript.ProjectId)
+                            .Select(s => new { s.ProjectName })
+                            .ToList();
+                if (project.Count == 1) updatedtrans.Project = project[0].ProjectName;
+                updatedtrans.ProjectId = transcript.ProjectId;
                 db.Entry(updatedtrans).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
