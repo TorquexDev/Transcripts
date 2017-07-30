@@ -28,9 +28,8 @@
     }
 </style>
 
-
-<button id="helpbutton" class="help_btn" style="float:right; margin: 10px;"><i class="material-icons">help</i></button>
-<img src="@Model.PageLogo" alt="logo" style="padding-right:10px;" /><h3 style="display:inline-block">@Html.DisplayFor(model => model.transcript.Project) - @Html.DisplayFor(model => model.transcript.Filename)</h3>
+<img id="helpbutton" src="~/images/if_help_36102.png" onmouseover="" alt="help" style="float:right; margin: 10px; cursor: pointer;" />
+<img src="@Model.PageLogo" alt="logo" style="padding-right:10px; height:50px;" /><h3 style="display:inline-block">@Html.DisplayFor(model => model.transcript.Project) - @Html.DisplayFor(model => model.transcript.Filename)</h3>
 
 
     <div id="helpmodal" class="help_modal">
@@ -124,9 +123,11 @@
 </script>
 
 
+<div>
 <p>
     @*    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |*@
     @Html.ActionLink("Back to List", "Unit", new { id = Model.transcript.ProjectId })
 </p>
+<br><br>@Html.DisplayFor(model => model.PageFooter)</div>
 
 

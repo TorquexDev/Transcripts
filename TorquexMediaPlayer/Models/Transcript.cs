@@ -35,6 +35,8 @@ namespace TorquexMediaPlayer.Models
         public string Channels { get; set; }
         public string Vocabs { get; set; }
         public bool Diarization { get; set; }
+        public int? Duration { get; set; }
+        public int? WordCount {get; set;}
     }
 
     public class TranscriptDBContext : DbContext

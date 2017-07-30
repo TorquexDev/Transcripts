@@ -9,6 +9,8 @@ using System.Web;
 using System.Web.Mvc;
 using TorquexMediaPlayer.Models;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Identity.Owin;
 
 namespace TorquexMediaPlayer.Controllers
 {
@@ -63,6 +65,8 @@ namespace TorquexMediaPlayer.Controllers
                 project.PageTitle = formdata.PageTitle;
                 project.ProjectName = formdata.ProjectName;
                 project.DeptName = formdata.DeptName;
+                project.Password = formdata.Password;
+                project.Email = formdata.Email;
                 string ext = Path.GetExtension(formdata.file.FileName);
                 string fn = Path.GetFileNameWithoutExtension(formdata.file.FileName);
                 string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
@@ -120,6 +124,8 @@ namespace TorquexMediaPlayer.Controllers
                 project.PageTitle = formdata.PageTitle;
                 project.ProjectName = formdata.ProjectName;
                 project.DeptName = formdata.DeptName;
+                project.Email = formdata.Email;
+                project.Password = formdata.Password;
 
                 if (formdata.file != null)
                 { 
@@ -139,17 +145,77 @@ namespace TorquexMediaPlayer.Controllers
             return View(formdata);
         }
 
+        // GET: /Account/Login
+        [AllowAnonymous]
+        public ActionResult Login(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            } else { 
 
-    // GET: Projects/Unit/5
-    [AllowAnonymous]
-        public ActionResult Unit(int? id)
+                var login = new ProjectLoginViewModel();
+                login.id = System.Convert.ToInt32(id);
+                Project project = db.Projects.Find(id);
+                login.DeptName = project.DeptName;
+                login.PageTitle = project.PageTitle;
+                login.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+                return View(login);
+            }
+        }
+
+        // POST: /Account/Login
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(ProjectLoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+
+            Project project = db.Projects.Find(model.id);
+
+            if (project.Password == model.Password)
+            {
+                Session["loggedIn"] = "True";
+                Session["ProjectId"] = model.id;
+                return RedirectToAction("Unit", new { id = model.id });
+            } else
+            {
+                ModelState.AddModelError("", "Invalid login attempt.");
+                model.DeptName = project.DeptName;
+                model.PageTitle = project.PageTitle;
+                model.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+                return View(model);
+
+            }
+
+        }
+
+
+        // GET: Projects/Unit/5
+        [AllowAnonymous]
+        public ActionResult Unit(int? id, string currentFilter, string searchString)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            if ((Session["loggedIn"] == null) || (Session["loggedIn"].ToString() != "True") || (Session["ProjectId"].ToString() != id.ToString()) )
+            {
+                   return RedirectToAction("Login", new { id = id });
+            }
             Project project = db.Projects.Find(id);
 
+            if (searchString == null)
+            { 
+                searchString = currentFilter;
+            }
+
+            ViewBag.CurrentFilter = searchString;
 
             if (project == null)
             {
@@ -167,6 +233,11 @@ namespace TorquexMediaPlayer.Controllers
             var transcripts = from s in db.Transcripts select s;
             transcripts = transcripts.Where(s => s.ProjectId == id);
 
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                transcripts = transcripts.Where(s => s.Text_Plain.Contains(searchString));
+            } 
+
             projectUnit.Transcripts = transcripts.ToList();
 
             return View(projectUnit);
@@ -180,7 +251,21 @@ namespace TorquexMediaPlayer.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             Transcript transcript = db.Transcripts.Find(id);
+
+            if (transcript == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+
+            if ((Session["loggedIn"] == null) || (Session["loggedIn"].ToString() != "True") || (Session["ProjectId"].ToString() != transcript.ProjectId.ToString()))
+            {
+                return RedirectToAction("Login", new { id = id });
+            }
+
+
             if (transcript == null)
             {
                 return HttpNotFound();

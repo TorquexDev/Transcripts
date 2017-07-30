@@ -59,6 +59,8 @@ namespace TorquexMediaPlayer.Controllers
                         {
                             PlainText = GetTranscriptPlain(trans.mediaId, token);
                             PlainSrt = GetTranscriptPlainSrt(trans.mediaId, token);
+                            trans.Duration = VBresponse.media.metadata.length.milliseconds;
+                            trans.WordCount = VBresponse.media.transcripts.latest.words.Count();
                             if (trans.Diarization) JSON = diarize(JSON);
                         }
                         else
@@ -125,6 +127,7 @@ namespace TorquexMediaPlayer.Controllers
             IRestResponse response = client.Execute(request);
             return response.Content;
         }
+
 
         private string diarize(string JSON)
         {

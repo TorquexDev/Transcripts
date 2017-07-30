@@ -16,6 +16,18 @@ namespace TorquexMediaPlayer.Models
         public string PageFooter { get; set; }
         public string CreateBy { get; set; }
         public DateTime CreateDate { get; set; }
+        public string Password { get; set; }
+        public string Email { get; set; }
+
+    }
+
+    public class ProjectLoginViewModel
+    {
+        public int id { get; set; }
+        public string Password { get; set; }
+        public string DeptName { get; set; }
+        public string PageLogo { get; set; }
+        public string PageTitle { get; set; }
 
     }
 
@@ -29,7 +41,7 @@ namespace TorquexMediaPlayer.Models
         public int ID { get; set; }
 
         [Required(ErrorMessage = "Please Enter a Short Name for this Unit")]
-        [Display(Name = "Unit Name")]
+        [Display(Name = "Unit/Subject Name")]
         public string ProjectName { get; set; }
         [Display(Name = "Department Name")]
         public string DeptName { get; set; }
@@ -40,6 +52,15 @@ namespace TorquexMediaPlayer.Models
 
         [Display(Name = "Footer Message")]
         public string PageFooter { get; set; }
+
+        [Display(Name = "Access Password")]
+        public string Password { get; set; }
+
+        [Display(Name = "Contact Email")]
+        [EmailAddress]
+        public string Email { get; set; }
+
+
 
     }
 
@@ -62,6 +83,7 @@ namespace TorquexMediaPlayer.Models
     {
         public Transcript transcript { get; set; }
         public string PageLogo { get; set; }
+        public string PageFooter { get; set; }
     }
 
 
@@ -71,13 +93,19 @@ namespace TorquexMediaPlayer.Models
         {
             int MaxContentLength = 1024 * 1024 * 1; //1 MB
             string[] AllowedFileExtensions = new string[] { ".jpg", ".gif", ".png" };
+            string filename = "";
 
             var file = value as HttpPostedFileBase;
-            string filename = file.FileName.ToLower();
 
-            if (file == null)
+            if (file == null) {
                 return true;
-            else if (!AllowedFileExtensions.Contains(filename.Substring(filename.LastIndexOf('.'))))
+            }
+            else
+            {
+                filename = file.FileName.ToLower();
+            }
+
+            if (!AllowedFileExtensions.Contains(filename.Substring(filename.LastIndexOf('.'))))
             {
                 ErrorMessage = "Please upload Your Logo Image of type: " + string.Join(", ", AllowedFileExtensions);
                 return false;
