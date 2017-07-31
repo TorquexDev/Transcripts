@@ -25,6 +25,7 @@ namespace TorquexMediaPlayer.Models
         public int p { get; set; }
         public int s { get; set; }
         public string w { get; set; }
+        public string m { get; set; }
     }
 
     public class PUpload

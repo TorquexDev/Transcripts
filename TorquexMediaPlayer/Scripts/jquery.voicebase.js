@@ -6827,6 +6827,7 @@ voiceBase = (function(VB, $) {
                     var word = {}
                     word["p"] = i;
                     word["s"] = x[i].getAttribute("t");
+                    word["m"] = x[i].getAttribute("m");
                     if (x[i].innerText) {
                         word["w"] = x[i].innerText;
                     }

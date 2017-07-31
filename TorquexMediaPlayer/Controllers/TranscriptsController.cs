@@ -571,7 +571,67 @@ namespace TorquexMediaPlayer.Controllers
         [HttpPost]
         public ActionResult Update(PUpload updata)
         {
- //           var indata = System.Web.Helpers.Json.Decode(updata);
+            List<Words> wordlist = new List<Words>();
+            Media VB;
+            Media JSONout;
+            Words word;
+            Words wordout;
+            Words oldWord;
+            PWords newWord;
+            Transcript transcript = (from s in db.Transcripts
+                                     where s.mediaId == updata.mediaId
+                                     select s).FirstOrDefault();
+            string JSON = transcript.JSON;
+            var json_serializer1 = new JavaScriptSerializer();
+            var json_serializer2 = new JavaScriptSerializer();
+            VB = json_serializer1.Deserialize<Media>(JSON);
+            JSONout = json_serializer2.Deserialize<Media>(JSON);
+            JSONout.media.transcripts.latest.words = wordlist.ToArray();
+
+            int numwords = updata.content.Count();
+            int i = 0;
+            int outcounter = 0;
+
+            while (outcounter < numwords)
+            {
+                word = VB.media.transcripts.latest.words[i];
+                newWord = updata.content[outcounter];
+
+                // Check if speaker insertion
+                if ((newWord.m != null) && ((word.m == null) || (word.m == "punc")))
+                {
+                    wordout = (Words)word.Clone();
+                    wordout.p = outcounter;
+                    wordout.e = wordout.s + 1000;
+                    wordout.w = newWord.w;
+                    wordout.m = "turn";
+                    wordlist.Add(wordout);
+                    outcounter++;
+                    newWord = updata.content[outcounter];
+                }
+
+                if (word.s == newWord.s)
+                {
+                    wordout = (Words)word.Clone();
+                    wordout.p = outcounter;
+                    wordout.w = newWord.w.Trim();
+                    wordlist.Add(wordout);
+                    if (word.w != newWord.w.Trim())  // write a record to the change log table.
+                    {
+
+                    }
+                }
+                outcounter++;
+                i++;
+            }
+
+            JSONout.media.transcripts.latest.words = wordlist.ToArray();
+            var sJSONout = new JavaScriptSerializer().Serialize(JSONout);
+
+            transcript.JSON = sJSONout;
+            db.Entry(transcript).State = EntityState.Modified;
+            db.SaveChanges();
+
             return Json("Success");
         }
 
