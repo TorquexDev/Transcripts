@@ -375,6 +375,14 @@
     background: url("../images/expand.png") no-repeat center center;
 }
 
+.vbs-expand-btn-prt {
+    background: url("../images/expand-part.png") no-repeat center center;
+}
+
+.vbs-shrink-btn-prt {
+    background: url("../images/shrink-part.png") no-repeat center center;
+}
+
 .vbs-section-header .vbs-order-human-trans {
     background: url("../images/green-bg-btn.png") repeat-x;
     border: 1px solid #1e8d21;

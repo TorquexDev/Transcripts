@@ -2636,6 +2636,26 @@ voiceBase = (function(VB, $) {
             });
 
             // Fullscreen btn
+            VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-expand-btn-prt', function (event) {
+                event.preventDefault();
+                var x = document.getElementsByClassName("playlist-none vbs-player-wrapper");
+                var h = parseInt(x[0].style.height);
+                if (h < 700) {
+                    x[0].style.height = (h * 1.2) + "px";
+                }
+            });
+
+            VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-shrink-btn-prt', function (event) {
+                event.preventDefault();
+                var x = document.getElementsByClassName("playlist-none vbs-player-wrapper");
+                var h = parseInt(x[0].style.height);
+                if (h > 270) {
+                    x[0].style.height = (h / 1.2) + "px";
+                }
+            });
+
+
+            // Fullscreen btn
             VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-expand-btn', function(event) {
                 event.preventDefault();
                 if (typeof VB.settings.webHooks.fullscreen != 'undefined') {
@@ -7499,7 +7519,7 @@ voiceBase = (function(VB, $) {
   
   templates['players/expandBtn']  = templates['players/expandBtn.ejs'] = function(it) {
     var locals = it, __output = "";
-    ;__output += "<li>\n    <a href=\"#\" class=\"vbs-expand-btn\" data-title=\"Expand Video\"></a>\n</li>";
+    ; __output += "<li>\n    <a href=\"#\" class=\"vbs-shrink-btn-prt\" data-title=\"Shrink Video\"></a>\n</li><li>\n    <a href=\"#\" class=\"vbs-expand-btn-prt\" data-title=\"Expand Video\"></a>\n</li><li>\n    <a href=\"#\" class=\"vbs-expand-btn\" data-title=\"Expand Video Full\"></a>\n</li>";
     return __output.trim();
   };
   

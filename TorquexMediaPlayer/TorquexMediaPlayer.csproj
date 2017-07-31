@@ -233,6 +233,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\Class1.cs" />
     <Compile Include="Models\configuration.cs" />
     <Compile Include="Models\FileUpload.cs" />
     <Compile Include="Models\IdentityModels.cs" />
@@ -400,6 +401,7 @@
     <Content Include="images\evernote-btn-active.png" />
     <Content Include="images\evernote-btn.png" />
     <Content Include="images\evernote-icon-sprite.png" />
+    <Content Include="images\expand-part.png" />
     <Content Include="images\expand.png" />
     <Content Include="images\green-bg-btn.png" />
     <Content Include="images\grey-arrow-down.png" />
@@ -459,6 +461,7 @@
     <Content Include="images\share-button-40x34.png" />
     <Content Include="images\share-icon%402x.png" />
     <Content Include="images\share-icon.png" />
+    <Content Include="images\shrink-part.png" />
     <Content Include="images\skipback-btn.png" />
     <Content Include="images\skipback-button%402x.png" />
     <Content Include="images\skipback-button-40x34%402x.png" />
