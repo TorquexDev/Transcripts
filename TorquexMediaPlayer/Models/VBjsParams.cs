@@ -129,5 +129,10 @@ namespace TorquexMediaPlayer.Models
         public MediaResponse media { get; set; }
     }
 
+    public class ResponseData
+    {
+        public string requestStatus { get; set; }
+        public int? id { get; set; }
 
+    }
 }

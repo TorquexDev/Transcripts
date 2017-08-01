@@ -1016,9 +1016,10 @@ voiceBase = (function(VB, $) {
         },
         responseSaveTrancript: function(data, args) {
             if (data.requestStatus == 'SUCCESS') {
-                setTimeout(function() {
+                VB.transcript.view.saveTranscriptComplete(data.id);
+ /*               setTimeout(function () {
                     VB.api.triggerTranscriptStatus();
-                }, VB.settings.transcriptCheckTimer * 1000);
+                }, VB.settings.transcriptCheckTimer * 1000);*/
             } else {
                 VB.transcript.view.saveTranscriptError(data.statusMessage);
             }
@@ -6854,14 +6855,15 @@ voiceBase = (function(VB, $) {
                 }
             },
 
-            saveTranscriptComplete: function() {
+            saveTranscriptComplete: function(id) {
                 VB.transcript.view.setIsSaving(false);
-                VB.view.initAfterSaveTranscript();
+                window.open("/Transcripts/Play/" + id, "_self");
+/*                VB.view.initAfterSaveTranscript();
                 VB.data.waiterSave = setInterval(function() {
                     if(VB.data.waiterSave) {
                         VB.helper.waitReadyAfterSave();
                     }
-                }, 100);
+                }, 100);*/
             },
 
             showSaveQuestion: function() {

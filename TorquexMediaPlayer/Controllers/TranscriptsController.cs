@@ -578,6 +578,8 @@ namespace TorquexMediaPlayer.Controllers
             Words wordout;
             Words oldWord;
             PWords newWord;
+            var data = new ResponseData();
+            data.requestStatus = "FAILED";
             Transcript transcript = (from s in db.Transcripts
                                      where s.mediaId == updata.mediaId
                                      select s).FirstOrDefault();
@@ -603,14 +605,19 @@ namespace TorquexMediaPlayer.Controllers
                     wordout = (Words)word.Clone();
                     wordout.p = outcounter;
                     wordout.e = wordout.s + 1000;
-                    wordout.w = newWord.w;
+                    wordout.w = newWord.w.Trim();
                     wordout.m = "turn";
                     wordlist.Add(wordout);
                     outcounter++;
                     newWord = updata.content[outcounter];
                 }
 
-                if (word.s == newWord.s)
+                // Check if word deleted
+                if (word.s < newWord.s)
+                {
+                    i++;
+                }
+                else
                 {
                     wordout = (Words)word.Clone();
                     wordout.p = outcounter;
@@ -618,11 +625,22 @@ namespace TorquexMediaPlayer.Controllers
                     wordlist.Add(wordout);
                     if (word.w != newWord.w.Trim())  // write a record to the change log table.
                     {
+                        var wChange = new WordChange();
+                        wChange.changeBy = User.Identity.Name;
+                        wChange.changeDate = DateTime.Now;
+                        wChange.p = i;
+                        wChange.TranscriptId = transcript.Id;
+                        wChange.m = wordout.m;
+                        wChange.oldWord = word.w;
+                        wChange.newWord = newWord.w.Trim();
+                        wChange.s = word.s;
+                        db.WordChanges.Add(wChange);
+                        db.SaveChanges();
 
                     }
+                    outcounter++;
+                    i++;
                 }
-                outcounter++;
-                i++;
             }
 
             JSONout.media.transcripts.latest.words = wordlist.ToArray();
@@ -632,7 +650,12 @@ namespace TorquexMediaPlayer.Controllers
             db.Entry(transcript).State = EntityState.Modified;
             db.SaveChanges();
 
-            return Json("Success");
+            data.requestStatus = "SUCCESS";
+            data.id = transcript.Id;
+
+            //return RedirectToAction("Play", new { id = transcript.Id });
+
+            return Json(data);
         }
 
         // GET: Transcripts/Delete/5

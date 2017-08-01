@@ -39,9 +39,23 @@ namespace TorquexMediaPlayer.Models
         public int? WordCount {get; set;}
     }
 
+    public class WordChange
+    {
+        public int id { get; set; }
+        public int TranscriptId { get; set; }
+        public int p { get; set;}
+        public int s { get; set; }
+        public string m { get; set; }
+        public string oldWord { get; set; }
+        public string newWord { get; set; }
+        public string changeBy { get; set; }
+        public DateTime changeDate { get; set; }
+    }
+
     public class TranscriptDBContext : DbContext
     {
         public DbSet<Transcript> Transcripts { get; set; }
+        public DbSet<WordChange> WordChanges { get; set; }
 
         public System.Data.Entity.DbSet<TorquexMediaPlayer.Models.Project> Projects { get; set; }
     }
