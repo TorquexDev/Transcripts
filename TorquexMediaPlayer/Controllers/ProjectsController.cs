@@ -11,6 +11,10 @@ using TorquexMediaPlayer.Models;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Owin;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using TorquexUtilities;
+using System.Text;
 
 namespace TorquexMediaPlayer.Controllers
 {
@@ -67,12 +71,31 @@ namespace TorquexMediaPlayer.Controllers
                 project.DeptName = formdata.DeptName;
                 project.Password = formdata.Password;
                 project.Email = formdata.Email;
-                string ext = Path.GetExtension(formdata.file.FileName);
-                string fn = Path.GetFileNameWithoutExtension(formdata.file.FileName);
-                string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
-                string saveFile = Server.MapPath("~/Content/ProjectLogos") + "\\" + fn + random + ext;
-                project.PageLogo = fn + random + ext;
-                formdata.file.SaveAs(saveFile);
+                if (formdata.file != null)
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(System.Configuration.ConfigurationManager.AppSettings["StorageConnectionString"]);
+
+                    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                    CloudBlobContainer blobContainer = blobClient.GetContainerReference("torquexmediaplayer");
+
+                    string ext = Path.GetExtension(formdata.file.FileName);
+                    string fn = Path.GetFileNameWithoutExtension(formdata.file.FileName);
+                    string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
+//                    string saveFile = Server.MapPath("~/Content/ProjectLogos") + "\\" + fn + random + ext;
+                    project.PageLogo = fn + random + ext;
+
+                    string blockName = StringUtils.blockName(project.PageLogo);
+
+                    if (!string.IsNullOrEmpty(blockName))
+                    {
+                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                        //upload files 
+                        blob.UploadFromStream(formdata.file.InputStream);
+                    }
+
+
+//                    formdata.file.SaveAs(saveFile);
+                }
                 db.Projects.Add(project);
                 db.SaveChanges();
                 ViewBag.Message = "File has been uploaded successfully";
@@ -100,7 +123,7 @@ namespace TorquexMediaPlayer.Controllers
             var projectEdit = new ProjectUpload();
             projectEdit.DeptName = project.DeptName;
             projectEdit.PageFooter = project.PageFooter;
-            projectEdit.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+            projectEdit.PageLogo = "https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/" + project.PageLogo;
             projectEdit.PageTitle = project.PageTitle;
             projectEdit.ProjectName = project.ProjectName;
             projectEdit.ID = project.ID;
@@ -128,13 +151,25 @@ namespace TorquexMediaPlayer.Controllers
                 project.Password = formdata.Password;
 
                 if (formdata.file != null)
-                { 
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.Parse(System.Configuration.ConfigurationManager.AppSettings["StorageConnectionString"]);
+                    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                    CloudBlobContainer blobContainer = blobClient.GetContainerReference("torquexmediaplayer");
+
                     string ext = Path.GetExtension(formdata.file.FileName);
                     string fn = Path.GetFileNameWithoutExtension(formdata.file.FileName);
                     string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
-                    string saveFile = Server.MapPath("~/Content/ProjectLogos") + "\\" + fn + random + ext;
+                    //                    string saveFile = Server.MapPath("~/Content/ProjectLogos") + "\\" + fn + random + ext;
                     project.PageLogo = fn + random + ext;
-                    formdata.file.SaveAs(saveFile);
+
+                    string blockName = StringUtils.blockName(project.PageLogo);
+
+                    if (!string.IsNullOrEmpty(blockName))
+                    {
+                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                        //upload files 
+                        blob.UploadFromStream(formdata.file.InputStream);
+                    }
                 }
                 db.Entry(project).State = EntityState.Modified;
                 db.SaveChanges();
@@ -159,7 +194,7 @@ namespace TorquexMediaPlayer.Controllers
                 Project project = db.Projects.Find(id);
                 login.DeptName = project.DeptName;
                 login.PageTitle = project.PageTitle;
-                login.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+                login.PageLogo = "https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/" + project.PageLogo;
                 return View(login);
             }
         }
@@ -188,7 +223,7 @@ namespace TorquexMediaPlayer.Controllers
                 ModelState.AddModelError("", "Invalid login attempt.");
                 model.DeptName = project.DeptName;
                 model.PageTitle = project.PageTitle;
-                model.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+                model.PageLogo = "https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/" + project.PageLogo;
                 return View(model);
 
             }
@@ -225,7 +260,7 @@ namespace TorquexMediaPlayer.Controllers
             var projectUnit = new PublicProject();
             projectUnit.DeptName = project.DeptName;
             projectUnit.PageFooter = project.PageFooter;
-            projectUnit.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+            projectUnit.PageLogo = "https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/" + project.PageLogo;
             projectUnit.PageTitle = project.PageTitle;
             projectUnit.ProjectName = project.ProjectName;
             projectUnit.ID = project.ID;
@@ -276,7 +311,28 @@ namespace TorquexMediaPlayer.Controllers
             Project project = db.Projects.Find(transcript.ProjectId);
 
             PlayProject.transcript = transcript;
-            PlayProject.PageLogo = "/Content/ProjectLogos/" + project.PageLogo;
+            PlayProject.PageLogo = "https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/" + project.PageLogo;
+
+            string fn = Path.GetFileNameWithoutExtension(transcript.PlayFile);
+            PlayProject.srtFile = fn + ".txt";
+            string inFile = Server.MapPath("~/temp") + "\\" + PlayProject.srtFile;
+
+            System.IO.File.WriteAllText(inFile, transcript.Text_Sort);
+
+            // Update srt file to blob storage to get over CORs issues and get the latest version.
+            /*            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(System.Configuration.ConfigurationManager.AppSettings["StorageConnectionString"]);
+                        CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                        CloudBlobContainer blobContainer = blobClient.GetContainerReference("torquexmediaplayer");
+
+                        string blockName = StringUtils.blockName(PlayProject.srtFile);
+                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+
+                        using (var stream = new MemoryStream(Encoding.Default.GetBytes(transcript.Text_Sort), false))
+                        {
+                            blob.UploadFromStream(stream);
+                        }
+
+            */
 
             return View(PlayProject);
         }

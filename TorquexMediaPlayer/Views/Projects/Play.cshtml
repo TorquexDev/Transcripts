@@ -74,12 +74,25 @@
 {
     <div style="padding:8px; align-content:center;"><b>Custom Vocabs Used : </b>@Html.DisplayFor(modelItem => Model.transcript.Vocabs)</div>
 }
+
+@{mediaType = Model.transcript.PlayFile.Substring(Model.transcript.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video";}
+
 <script type='text/javascript'>
             jQuery(document).ready(function() {
                 jwplayer('jwplayer').setup({
                     primary: "html5",
-                    file: 'https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/' + '@Html.DisplayFor(modelItem => Model.transcript.PlayFile)' ,
-                    width: '100%'
+                    file: 'https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/' + '@Html.DisplayFor(modelItem => Model.transcript.PlayFile)',
+                    width: '100%',
+                    @if (mediaType == "video")
+                    {
+                        <text>tracks: [{
+                            file: '/temp/' + '@Html.DisplayFor(modelItem => Model.srtFile)',
+							label: "English",
+							kind: "captions",
+							"default": true
+                        }]</text>
+
+                    }
                 });
 
                 jQuery('#jwplayer').voicebase({
@@ -111,7 +124,6 @@
                         unquotes: !0
                     },
                     localSearch: true,
-                    @{mediaType = Model.transcript.PlayFile.Substring(Model.transcript.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video" ;}
                     mediaTypeOverride: '@mediaType'
                 });
 

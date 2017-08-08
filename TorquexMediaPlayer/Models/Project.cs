@@ -84,6 +84,7 @@ namespace TorquexMediaPlayer.Models
         public Transcript transcript { get; set; }
         public string PageLogo { get; set; }
         public string PageFooter { get; set; }
+        public string srtFile { get; set; }
     }
 
 

@@ -88,7 +88,7 @@ var voiceBase = (function($) {
         transcriptHighlight: 10,
         transcriptCheckTimer: 10,
         turnTimes: !0,
-        lineBreak: !1,
+        lineBreak: !0,
         commentsBlock: 'vbs-comments',
         humanOnly: !1,
         animation: !0,
@@ -6638,6 +6638,7 @@ voiceBase = (function(VB, $) {
                     isTurn = false,
                     last = 0;
                 var dt_length = dt.length;
+                var pKey = 0;
                 for (var i = 0; i < dt_length; i++) {
                     var val = dt[i];
                     if (i === 0) {
@@ -6651,13 +6652,40 @@ voiceBase = (function(VB, $) {
 
                     isTurn = VB.transcript.isTurn(val.m);
                     var sptag = VB.speakers.createSpeakerAttr(val);
+                    var style = '';
 
                     var br = (isTurn && i > 2) ? '<br/><br/>' : '';
                     var br2 = (VB.settings.lineBreak && typeof dt[i - 1] !== "undefined" && dt[i].s - dt[i - 1].e > VB.settings.lineBreak * 1000) ? '<br/><br/>' : '';
                     fw = (i === 0 && typeof val.m === "undefined") ? 'data-f=true' : '';
                     var word = VB.common.replaceN(val.w);
+
+                    if (typeof val.m === "undefined")  // not turn or punctuation check if part of keyword.
+                    {
+                        var found = VB.keywords.data.keywords.reduce(function (previousValue, currentValue, index, array) {
+                            return (previousValue >= 0) ? previousValue : (currentValue.indexOf(word.toLowerCase()) >= 0) ? index : -1;
+                        }, -1);
+/*                        var found = $.grep(VB.keywords.data.keywords, function (value, i) {
+                            return value.indexOf(word);
+                        }).length; */
+
+                        if (found !== -1) {
+                            var keyArray = VB.keywords.data.keywords[found].split(' ');
+                            var fullMatch = 1;
+                            for (var j = 0; j < keyArray.length; j++) {
+                                if (keyArray[j].toLowerCase() !== dt[i + j - pKey].w.toLowerCase()) fullMatch = 0;
+                            }
+                            if (fullMatch === 1) {
+                                pKey++;
+                                style = ' style="font-weight:bold;" ';
+                            }
+                        } else pKey = 0;
+
+                    } else {
+                        pKey = 0;
+                    }
+
                     transpart += val.w.match(/\w+/g)
-                        ? br + br2 + '<span class="w vbs-trans-word" t="' + val.s + '" ' + sptag + ' ' + fw + '> ' + word + '</span>'
+                        ? br + br2 + '<span class="w vbs-trans-word" t="' + val.s + '" ' + sptag + ' ' + fw + style + '> ' + word + '</span>'
                         : '<span class="vbs-punc vbs-trans-word" t="' + val.s + '" ' + sptag + '>' + word + '</span>';
                 }
 
@@ -7390,7 +7418,7 @@ voiceBase = (function(VB, $) {
   
   templates['keywords/keywordsBlock']  = templates['keywords/keywordsBlock.ejs'] = function(it) {
     var locals = it, __output = "";
-    ; var tabClass = (locals.tabView) ? 'vbs-tab' : '' ;__output += "\n";; var hasFilepickerBtn = locals.vbsButtons.evernote && typeof filepicker !== 'undefined'; ;__output += "\n\n<div class=\"vbs-keywords-block ";;__output += escape(tabClass);__output += "\">\n    <div class=\"vbs-section-header\">\n        <div class=\"vbs-section-title\" data-title=\"Hide Keywords\">\n            <span class=\"vbs-section-name\">Keywords</span>\n        </div>\n        \n        <div class=\"vbs-search-form vbs-no-speaker ";; if(hasFilepickerBtn) { ;__output += " vbs-one-btn ";; } else { ;__output += " vbs-no-btns ";; } ;__output += "\">\n            ";; if(!locals.searchBarOuter) { ;__output += "\n            <form action=\"#\" id=\"vbs-search-form\">\n                <div class=\"vbs-widget-wrap\">\n                    <div class=\"vbs-widget\">\n                        <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search Keywords...\" autocomplete=off>\n                        <div id=\"vbs-search-string\">\n                            <div class=\"vbs-marquee\">\n                                <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                        ";; if(locals.vbsButtons.pwrdb) { ;__output += "\n                        <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                        ";; } ;__output += "\n                    </div>\n                    <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n                </div>\n                ";; if(locals.vbsButtons.unquotes) { ;__output += "\n                <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n                ";; } ;__output += "\n\n                <div class=\"vbs-search-btn\" data-title=\"Search\">\n                    <button type=\"submit\"></button>\n                </div>\n            </form>\n            ";; } ;__output += "\n\n            <div class=\"vbs-select-speaker-wrapper\">\n                <div class=\"vbs-select-speaker\">Select speaker...</div>\n                <ul class=\"vbs-speaker-dropdown vbs-select-dropdown\"></ul>\n            </div>\n        </div>\n\n        ";; if(hasFilepickerBtn) { ;__output += "\n        <div class=\"vbs-section-btns\">\n            <ul>\n                <li>\n                    <a href=\"#\" class=\"vbs-evernote-btn\" data-title=\"Send to Evernote\"></a>\n                </li>\n            </ul>\n        </div>\n        ";; } ;__output += "\n\n        <div class=\"clear-block\"></div>\n    </div>\n    <!-- / section header-->\n    \n    <div class=\"vbs-section-body\">\n        <div class=\"vbs-keywords-wrapper vbs-scroll\" style=\"height: ";;__output += escape(voiceBase.settings.keywordsHeight);__output += "px;\">\n            <div class=\"vbs-topics\"></div>\n            <div class=\"vbs-keywords-list-wrapper\">\n                <div class=\"vbs-keywords-list-tab\"></div>\n            </div>\n            <div class=\"clear-block\"></div>\n        </div>\n\n        ";; if(voiceBase.settings.showMore) { ;__output += "\n        <div class=\"vbs-more-btn\"><a href=\"#\">Show More...</a></div>\n        ";; } ;__output += "\n    </div>\n</div>\n";
+    ; var tabClass = (locals.tabView) ? 'vbs-tab' : '' ;__output += "\n";; var hasFilepickerBtn = locals.vbsButtons.evernote && typeof filepicker !== 'undefined'; ;__output += "\n\n<div class=\"vbs-keywords-block ";;__output += escape(tabClass);__output += "\">\n    <div class=\"vbs-section-header\">\n        <div class=\"vbs-section-title\" data-title=\"Hide Keywords\">\n            <span class=\"vbs-section-name\">Keywords</span>\n        </div>\n        \n        <div class=\"vbs-search-form vbs-no-speaker ";; if(hasFilepickerBtn) { ;__output += " vbs-one-btn ";; } else { ;__output += " vbs-no-btns ";; } ;__output += "\">\n            ";; if(!locals.searchBarOuter) { ;__output += "\n            <form action=\"#\" id=\"vbs-search-form\">\n                <div class=\"vbs-widget-wrap\">\n                    <div class=\"vbs-widget\">\n                        <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search for a word or words...\" autocomplete=off>\n                        <div id=\"vbs-search-string\">\n                            <div class=\"vbs-marquee\">\n                                <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                        ";; if(locals.vbsButtons.pwrdb) { ;__output += "\n                        <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                        ";; } ;__output += "\n                    </div>\n                    <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n                </div>\n                ";; if(locals.vbsButtons.unquotes) { ;__output += "\n                <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n                ";; } ;__output += "\n\n                <div class=\"vbs-search-btn\" data-title=\"Search\">\n                    <button type=\"submit\"></button>\n                </div>\n            </form>\n            ";; } ;__output += "\n\n            <div class=\"vbs-select-speaker-wrapper\">\n                <div class=\"vbs-select-speaker\">Select speaker...</div>\n                <ul class=\"vbs-speaker-dropdown vbs-select-dropdown\"></ul>\n            </div>\n        </div>\n\n        ";; if(hasFilepickerBtn) { ;__output += "\n        <div class=\"vbs-section-btns\">\n            <ul>\n                <li>\n                    <a href=\"#\" class=\"vbs-evernote-btn\" data-title=\"Send to Evernote\"></a>\n                </li>\n            </ul>\n        </div>\n        ";; } ;__output += "\n\n        <div class=\"clear-block\"></div>\n    </div>\n    <!-- / section header-->\n    \n    <div class=\"vbs-section-body\">\n        <div class=\"vbs-keywords-wrapper vbs-scroll\" style=\"height: ";;__output += escape(voiceBase.settings.keywordsHeight);__output += "px;\">\n            <div class=\"vbs-topics\"></div>\n            <div class=\"vbs-keywords-list-wrapper\">\n                <div class=\"vbs-keywords-list-tab\"></div>\n            </div>\n            <div class=\"clear-block\"></div>\n        </div>\n\n        ";; if(voiceBase.settings.showMore) { ;__output += "\n        <div class=\"vbs-more-btn\"><a href=\"#\">Show More...</a></div>\n        ";; } ;__output += "\n    </div>\n</div>\n";
     return __output.trim();
   };
   
@@ -7552,7 +7580,7 @@ voiceBase = (function(VB, $) {
   
   templates['search/searchBarOuter']  = templates['search/searchBarOuter.ejs'] = function(it) {
     var locals = it, __output = "";
-    ;__output += "<div id=\"vbs-searchbar-block\">\n    <div class=\"vbs-search-form vbs-no-speaker\">\n        <form action=\"#\" id=\"vbs-search-form\">\n            <div class=\"vbs-widget-wrap\">\n                <div class=\"vbs-widget\">\n                    <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search Keywords...\" autocomplete=off>\n                    <div id=\"vbs-search-string\">\n                        <div class=\"vbs-marquee\">\n                            <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                    ";; if(voiceBase.settings.vbsButtons.pwrdb) { ;__output += "\n                    <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                    ";; } ;__output += "\n                </div>\n                <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n            </div>\n\n            ";; if(voiceBase.settings.vbsButtons.unquotes) { ;__output += "\n            <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n            ";; } ;__output += "\n\n            <div class=\"vbs-search-btn\" data-title=\"Search\">\n               <button type=\"submit\"></button>\n            </div>\n        </form>\n    </div>\n</div>\n";
+    ;__output += "<div id=\"vbs-searchbar-block\">\n    <div class=\"vbs-search-form vbs-no-speaker\">\n        <form action=\"#\" id=\"vbs-search-form\">\n            <div class=\"vbs-widget-wrap\">\n                <div class=\"vbs-widget\">\n                    <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search for a word or words...\" autocomplete=off>\n                    <div id=\"vbs-search-string\">\n                        <div class=\"vbs-marquee\">\n                            <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                    ";; if(voiceBase.settings.vbsButtons.pwrdb) { ;__output += "\n                    <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                    ";; } ;__output += "\n                </div>\n                <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n            </div>\n\n            ";; if(voiceBase.settings.vbsButtons.unquotes) { ;__output += "\n            <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n            ";; } ;__output += "\n\n            <div class=\"vbs-search-btn\" data-title=\"Search\">\n               <button type=\"submit\"></button>\n            </div>\n        </form>\n    </div>\n</div>\n";
     return __output.trim();
   };
   

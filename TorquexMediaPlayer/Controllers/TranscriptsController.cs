@@ -232,6 +232,12 @@ namespace TorquexMediaPlayer.Controllers
             {
                 return HttpNotFound();
             }
+            string fn = Path.GetFileNameWithoutExtension(transcript.PlayFile);
+            ViewBag.srtFile = fn + ".txt";
+            string inFile = Server.MapPath("~/temp") + "\\" + ViewBag.srtFile;
+
+            System.IO.File.WriteAllText(inFile, transcript.Text_Sort);
+
 
             return View(transcript);
         }
@@ -457,7 +463,7 @@ namespace TorquexMediaPlayer.Controllers
             request.AddHeader("Authorization", "Bearer " + token);
             request.AddFile("media", file.InputStream.CopyTo, file.FileName, file.ContentType);
             request.Files[0].ContentLength = file.ContentLength;
-            request.Timeout = 300000;
+            request.Timeout = 600000;
 
             configuration sconfig = new configuration();
 
