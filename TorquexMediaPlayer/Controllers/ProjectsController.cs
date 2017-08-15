@@ -27,7 +27,9 @@ namespace TorquexMediaPlayer.Controllers
         {
             var projects = from s in db.Projects select s;
             projects = projects.Where(s => s.CreateBy.Equals(User.Identity.Name));
+            EventLoad.LogEvent(User.Identity.Name, null, "List_Projects", null, null, null, null);
             return View(projects.ToList());
+
         }
 
         // GET: Projects/Details/5
@@ -38,6 +40,7 @@ namespace TorquexMediaPlayer.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Project project = db.Projects.Find(id);
+            EventLoad.LogEvent(User.Identity.Name, null, "Project_Details", null, null, null, id);
             if (project == null)
             {
                 return HttpNotFound();
@@ -98,6 +101,7 @@ namespace TorquexMediaPlayer.Controllers
                 }
                 db.Projects.Add(project);
                 db.SaveChanges();
+                EventLoad.LogEvent(User.Identity.Name, null, "Project_Details", null, null, null, project.ID);
                 ViewBag.Message = "File has been uploaded successfully";
                 ModelState.Clear();
                 return RedirectToAction("Index");
@@ -173,10 +177,13 @@ namespace TorquexMediaPlayer.Controllers
                 }
                 db.Entry(project).State = EntityState.Modified;
                 db.SaveChanges();
+                EventLoad.LogEvent(User.Identity.Name, null, "Project_Edit", null, null, null, project.ID);
                 ViewBag.Message = "File has been uploaded successfully";
                 ModelState.Clear();
                 return RedirectToAction("Index");
             }
+            
+
             return View(formdata);
         }
 
@@ -217,6 +224,7 @@ namespace TorquexMediaPlayer.Controllers
             {
                 Session["loggedIn"] = "True";
                 Session["ProjectId"] = model.id;
+                EventLoad.LogEvent(User.Identity.Name, null, "Project_Login", null, null, null, model.id);
                 return RedirectToAction("Unit", new { id = model.id });
             } else
             {
@@ -266,7 +274,7 @@ namespace TorquexMediaPlayer.Controllers
             projectUnit.ID = project.ID;
 
             var transcripts = from s in db.Transcripts select s;
-            transcripts = transcripts.Where(s => s.ProjectId == id);
+            transcripts = transcripts.Where(s => s.ProjectId == id && s.Active == true);
 
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -274,6 +282,7 @@ namespace TorquexMediaPlayer.Controllers
             } 
 
             projectUnit.Transcripts = transcripts.ToList();
+            EventLoad.LogEvent(User.Identity.Name, null, "Project_View", null, null, null, project.ID);
 
             return View(projectUnit);
         }
@@ -294,10 +303,14 @@ namespace TorquexMediaPlayer.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
+            if (!transcript.Active)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
 
             if ((Session["loggedIn"] == null) || (Session["loggedIn"].ToString() != "True") || (Session["ProjectId"].ToString() != transcript.ProjectId.ToString()))
             {
-                return RedirectToAction("Login", new { id = id });
+                return RedirectToAction("Login", new { id = transcript.ProjectId });
             }
 
 
@@ -333,6 +346,7 @@ namespace TorquexMediaPlayer.Controllers
                         }
 
             */
+            EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Project_Load_Play", null, null, null, transcript.ProjectId);
 
             return View(PlayProject);
         }
@@ -363,6 +377,7 @@ namespace TorquexMediaPlayer.Controllers
             db.SaveChanges();
             var sId = new SqlParameter("@id", id);
             db.Database.ExecuteSqlCommand("update Transcripts set ProjectId = null, Project = null where ProjectId = @id;", sId);
+            EventLoad.LogEvent(User.Identity.Name, null, "Project_Delete", null, null, null, id);
             return RedirectToAction("Index");
         }
 

@@ -2099,12 +2099,18 @@ voiceBase = (function(VB, $) {
                 e.preventDefault();
                 var $this = $(this);
                 var $vbs_tooltip = $('.vbs-tooltip');
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = null;
+                
+
                 if (!$this.hasClass("vbs-playing")) {
                     VB.helper.track('play');
                     $this.addClass('vbs-playing').attr("data-title", "Pause");
                     $vbs_tooltip.text("Pause");
                     VB.helper.showLoader();
-                   
+                    Tparams.eventType = "Play";
+                    VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                     VB.PlayerApi.play();
                     
                 } else {
@@ -2112,6 +2118,8 @@ voiceBase = (function(VB, $) {
                     VB.helper.track('pause');
                     $vbs_tooltip.text("Play");
                     VB.helper.hideLoader();
+                    Tparams.eventType = "Pause";
+                    VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                     VB.PlayerApi.pause();
                 }
                 return false;
@@ -2143,6 +2151,11 @@ voiceBase = (function(VB, $) {
                 var btime = VB.PlayerApi.getPosition();
                 VB.PlayerApi.seek(btime);
                 theVideo.playbackRate = 1.0;
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = "1";
+                Tparams.eventType = "Play_Speed";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                 document.getElementById("vbs-playback-dropdown-id").classList.toggle("vbs-playback-show");
                 //document.getElementById("vbs-playback-title-id").textContent = "PlaybackSpeed: X" + theVideo.playbackRate;
                 return false;
@@ -2154,6 +2167,11 @@ voiceBase = (function(VB, $) {
                 var btime = VB.PlayerApi.getPosition();
                 VB.PlayerApi.seek(btime);
                 theVideo.playbackRate = 1.5;
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = "1.5";
+                Tparams.eventType = "Play_Speed";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                 document.getElementById("vbs-playback-dropdown-id").classList.toggle("vbs-playback-show");
                 //document.getElementById("vbs-playback-title-id").textContent = "PlaybackSpeed: X" + theVideo.playbackRate;
                 return false;
@@ -2165,6 +2183,11 @@ voiceBase = (function(VB, $) {
                 var btime = VB.PlayerApi.getPosition();
                 VB.PlayerApi.seek(btime);
                 theVideo.playbackRate = 2.0;
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = "2.0";
+                Tparams.eventType = "Play_Speed";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                 document.getElementById("vbs-playback-dropdown-id").classList.toggle("vbs-playback-show");
                 //document.getElementById("vbs-playback-title-id").textContent ="Playbackspeed: X" +  theVideo.playbackRate;
                 return false;
@@ -2644,6 +2667,11 @@ voiceBase = (function(VB, $) {
                 if (h < 700) {
                     x[0].style.height = (h * 1.2) + "px";
                 }
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Video_Size";
+                Tparams.eventValue = x[0].style.height;
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
             });
 
             VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-shrink-btn-prt', function (event) {
@@ -2653,6 +2681,11 @@ voiceBase = (function(VB, $) {
                 if (h > 270) {
                     x[0].style.height = (h / 1.2) + "px";
                 }
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Video_Size";
+                Tparams.eventValue = x[0].style.height;
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
             });
 
 
@@ -2685,6 +2718,14 @@ voiceBase = (function(VB, $) {
                 }
                 VB.view.resizeTimelineElements();
                 VB.news.view.collapseNewsBlock();
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Video_Size";
+                Tparams.eventValue = "Full Screen";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+
+
+
                 return false;
             });
 
@@ -4530,6 +4571,13 @@ voiceBase = (function(VB, $) {
                 var term = VB.keywords.termFor(termstring, 'url');
                 var markerterms = VB.keywords.termFor(termstring, 'marker');
 
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Search_Click";
+                Tparams.eventValue = termstring;
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+
+
                 VB.helper.find('#vbs-voice_search_txt').val(term).change();
                 $elem.addClass('bold');
                 if (markerterms.length) {
@@ -4675,6 +4723,14 @@ voiceBase = (function(VB, $) {
                     VB.helper.showLoader();
                     VB.view.searchWordWidget(words);
                     VB.api.getSearch(words);
+                    var Tparams = new Object();
+                    Tparams.mediaId = VB.settings.mediaId;
+                    Tparams.eventType = "Search";
+                    var arrayLength = words.length;
+                    for (var i = 0; i < arrayLength; i++) {
+                        Tparams.eventValue = words[i];
+                        VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+                    }
 /*					var arrayLength = words.length;
 					for (var i = 0; i < arrayLength; i++) {
 						_trackEvent('Free Text Search','Search Click', words[i]);
@@ -6639,6 +6695,27 @@ voiceBase = (function(VB, $) {
                     last = 0;
                 var dt_length = dt.length;
                 var pKey = 0;
+                // create an array of start times for the keyword highlighting.
+                var KeyTime = function (st, name) {
+                    this.st = st;
+                    this.name = name;
+                };
+                var KeyTimes = [];
+
+                for (var i = 0; i < VB.keywords.data.categories.length; i++) {
+                    var categories = VB.keywords.data.categories[i];
+                    for (var j = 0; j < categories.keywords.length; j++) {
+                        var keywords = categories.keywords[j];
+                        $.each(keywords.t, function (index, value) {
+                            for (var k = 0; k < value.length; k++) {
+                                KeyTimes.push(new KeyTime(value[k] * 1000, keywords.name));
+                            }
+                        });
+                    }
+                }
+
+                var found = -1;
+
                 for (var i = 0; i < dt_length; i++) {
                     var val = dt[i];
                     if (i === 0) {
@@ -6661,27 +6738,31 @@ voiceBase = (function(VB, $) {
 
                     if (typeof val.m === "undefined")  // not turn or punctuation check if part of keyword.
                     {
-                        var found = VB.keywords.data.keywords.reduce(function (previousValue, currentValue, index, array) {
-                            return (previousValue >= 0) ? previousValue : (currentValue.indexOf(word.toLowerCase()) >= 0) ? index : -1;
-                        }, -1);
-/*                        var found = $.grep(VB.keywords.data.keywords, function (value, i) {
-                            return value.indexOf(word);
-                        }).length; */
+
+                        
+                        if (found === -1) {
+                            $.each(KeyTimes, function (index, value) {
+                                if (value.st == dt[i].s) found = index;
+                            });
+                        }
 
                         if (found !== -1) {
-                            var keyArray = VB.keywords.data.keywords[found].split(' ');
-                            var fullMatch = 1;
-                            for (var j = 0; j < keyArray.length; j++) {
-                                if (keyArray[j].toLowerCase() !== dt[i + j - pKey].w.toLowerCase()) fullMatch = 0;
-                            }
-                            if (fullMatch === 1) {
-                                pKey++;
-                                style = ' style="font-weight:bold;" ';
-                            }
+                            var keyArray = KeyTimes[found].name.split(' ');
+                            if (pKey < keyArray.length) {
+                                var fullMatch = 1;
+                                for (var j = 0; j < keyArray.length; j++) {
+                                    if (keyArray[j].toLowerCase() !== dt[i + j - pKey].w.toLowerCase()) fullMatch = 0;
+                                }
+                                if (fullMatch === 1) {
+                                    pKey++;
+                                    style = ' style="font-weight:bold;" ';
+                                }
+                            } else found = -1;
                         } else pKey = 0;
 
                     } else {
                         pKey = 0;
+                        found = -1;
                     }
 
                     transpart += val.w.match(/\w+/g)

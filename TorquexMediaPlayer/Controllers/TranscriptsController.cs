@@ -35,8 +35,8 @@ namespace TorquexMediaPlayer.Controllers
             ViewBag.FileNameSortParm = sortOrder == "Filename" ? "Filename_desc" : "Filename";
             ViewBag.ProjectSortParm = sortOrder == "Project" ? "Project_desc" : "Project";
             var transcripts = from s in db.Transcripts select s;
-            transcripts = transcripts.Where(s => s.createby.Equals(User.Identity.Name));
-
+            transcripts = transcripts.Where(s => s.createby.Equals(User.Identity.Name) && s.Active == true);// override object.Equals
+ 
             if (searchString != null)
             {
                 page = 1;
@@ -80,6 +80,7 @@ namespace TorquexMediaPlayer.Controllers
             }
             int pageSize = 10;
             int pageNumber = (page ?? 1);
+            EventLoad.LogEvent(User.Identity.Name, null, "List_Transcripts", null, null, null, null);
             return View(transcripts.ToPagedList(pageNumber, pageSize));
 
 
@@ -93,6 +94,8 @@ namespace TorquexMediaPlayer.Controllers
             string filepath = Server.MapPath("~/temp/");
             string fname = mediaid;
             string filename = filepath + fname;
+
+            EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Download", format, null, null, null);
 
 
             switch (format)
@@ -216,6 +219,8 @@ namespace TorquexMediaPlayer.Controllers
             {
                 return HttpNotFound();
             }
+            EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Transcript_Details", null, null, null, null);
+
             return View(transcript);
         }
 
@@ -232,11 +237,20 @@ namespace TorquexMediaPlayer.Controllers
             {
                 return HttpNotFound();
             }
+
+            if (!transcript.Active)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+
             string fn = Path.GetFileNameWithoutExtension(transcript.PlayFile);
             ViewBag.srtFile = fn + ".txt";
             string inFile = Server.MapPath("~/temp") + "\\" + ViewBag.srtFile;
 
             System.IO.File.WriteAllText(inFile, transcript.Text_Sort);
+
+            EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Load_Play", null, null, null, null);
 
 
             return View(transcript);
@@ -268,7 +282,9 @@ namespace TorquexMediaPlayer.Controllers
 
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
             CloudBlobContainer blobContainer = blobClient.GetContainerReference("torquexmediaplayer");
- 
+            string blockName = "";
+
+
             if (Request.Files.Count > 0)
             {
                 var stereo1 = formdata.stereo_channel1;
@@ -291,8 +307,6 @@ namespace TorquexMediaPlayer.Controllers
                     HttpPostedFileBase file = httpFiles[i];
                     transcript.Filename = file.FileName;
 
-                    // Send to Voicebase
-                    transcript.mediaId = GetMedia(file, transcript, formdata.channel, formdata.stereo_channel1, formdata.stereo_channel2);
 
                     // Split up files so we can rename and make unique
 
@@ -300,7 +314,22 @@ namespace TorquexMediaPlayer.Controllers
                     string fn = Path.GetFileNameWithoutExtension(file.FileName);
                     string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
 
-                     // Check if file is wav and convert to mp3
+                    transcript.PlayFile = fn + random + ext;
+
+
+                    // Send to Voicebase
+                    try
+                    {
+                        transcript.mediaId = GetMedia(file, transcript, formdata.channel, formdata.stereo_channel1, formdata.stereo_channel2);
+                        transcript.VBstatus = "submitted";
+                    }
+                    catch
+                    {
+                        transcript.VBstatus = "failed";
+                    }
+
+
+                    // Check if file is wav and convert to mp3
                     if (ext.ToLower() == ".wav")
                     {
                         // reset filestream to start
@@ -325,7 +354,7 @@ namespace TorquexMediaPlayer.Controllers
                             engine.Convert(inputFile, outputFile);
                             file.InputStream.Dispose();
                         }
-                        string blockName = StringUtils.blockName(outFile);
+                        blockName = StringUtils.blockName(outFile);
                         if (!string.IsNullOrEmpty(blockName))
                         {
                             CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
@@ -341,27 +370,27 @@ namespace TorquexMediaPlayer.Controllers
 
 
                     }
-                    else
+
+                    // Save input file to blob
+
+                    // reset filestream to start
+                    if (file.InputStream.CanSeek)
                     {
-                        transcript.PlayFile = fn + random + ext;
-                        // reset filestream to start
-                        if (file.InputStream.CanSeek)
-                        {
-                            file.InputStream.Seek(0, SeekOrigin.Begin);
-                        }
-                        // Save file to blob
-                        //Generates  a blobName 
-                        string blockName = StringUtils.blockName(transcript.PlayFile);
-
-                        if (!string.IsNullOrEmpty(blockName))
-                        {
-                            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
-                            //upload files 
-                            blob.UploadFromStream(file.InputStream);
-                         }
-
-
+                        file.InputStream.Seek(0, SeekOrigin.Begin);
                     }
+                    // Save file to blob
+                    //Generates  a blobName 
+                    blockName = StringUtils.blockName(transcript.PlayFile);
+
+                    if (!string.IsNullOrEmpty(blockName))
+                    {
+                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                        //upload files 
+                        blob.UploadFromStream(file.InputStream);
+                    }
+
+
+                    
 
                     if (formdata.projectList != null)
                     {
@@ -397,10 +426,13 @@ namespace TorquexMediaPlayer.Controllers
 
 
 
+
+
                     // Save to database
                     transcript.createby = User.Identity.Name;
                     transcript.CreateTime = DateTime.Now;
-                    transcript.VBstatus = "submitted";
+                    transcript.Active = true;
+                    
 
 
                     db.Transcripts.Add(transcript);
@@ -464,6 +496,7 @@ namespace TorquexMediaPlayer.Controllers
             request.AddFile("media", file.InputStream.CopyTo, file.FileName, file.ContentType);
             request.Files[0].ContentLength = file.ContentLength;
             request.Timeout = 600000;
+     
 
             configuration sconfig = new configuration();
 
@@ -531,6 +564,7 @@ namespace TorquexMediaPlayer.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Transcript transcript = db.Transcripts.Find(id);
+
             if (transcript == null)
             {
                 return HttpNotFound();
@@ -570,7 +604,10 @@ namespace TorquexMediaPlayer.Controllers
                 db.Entry(updatedtrans).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
+
             }
+            EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Edit_Transcript", null, null, null, null);
+
             return View(transcript);
         }
 
@@ -595,6 +632,55 @@ namespace TorquexMediaPlayer.Controllers
             VB = json_serializer1.Deserialize<Media>(JSON);
             JSONout = json_serializer2.Deserialize<Media>(JSON);
             JSONout.media.transcripts.latest.words = wordlist.ToArray();
+
+            // Get Txt Srt file into memory.
+            List<SrtFile> srtList = new List<SrtFile>();
+            SrtFile srtIntance = new SrtFile();
+            SrtFile srtObj = (SrtFile)srtIntance.Clone();
+            int sPos = 0;
+            
+
+            using (StringReader reader = new StringReader(transcript.Text_Sort))
+            {
+                string line = string.Empty;
+                do
+                {
+                    line = reader.ReadLine();
+                    if (line != null)
+                    {
+                        if (line.Length == 0)
+                        {
+                            srtList.Add(srtObj);
+                            srtObj = (SrtFile)srtIntance.Clone();
+                            sPos = 0;
+                            srtObj.content = "";
+                        }
+                        else
+                        {
+                            switch (sPos)
+                            {
+                                case 0:
+                                    srtObj.pos = line;
+                                    sPos++;
+                                    break;
+                                case 1:
+                                    sPos++;
+                                    string[] separators = { " --> " };
+                                    string[] times = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                                    srtObj.s = StringUtils.timeToMilliseconds(times[0]);
+                                    srtObj.e = StringUtils.timeToMilliseconds(times[1]);
+                                    srtObj.time = line;
+                                    break;
+                                default:
+                                    srtObj.content += line + "\n";
+                                    break;
+                            }
+                        }
+
+                    }
+                } while (line != null);
+                srtList.Add(srtObj);
+            }
 
             int numwords = updata.content.Count();
             int i = 0;
@@ -643,6 +729,20 @@ namespace TorquexMediaPlayer.Controllers
                         db.WordChanges.Add(wChange);
                         db.SaveChanges();
 
+                        // Update Srt
+                        // Find relevant object.
+                        int j = 0;
+                        do
+                        {
+                            if ((srtList[j].s <= word.s) && (srtList[j].e >= word.s))
+                            {
+                                srtList[j].content = srtList[j].content.Replace(word.w, newWord.w.Trim());
+                            }
+                            j++;
+                        } while (j < srtList.Count);
+
+                        EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Word_Change", null, wChange.oldWord, wChange.newWord, null);
+
                     }
                     outcounter++;
                     i++;
@@ -652,7 +752,20 @@ namespace TorquexMediaPlayer.Controllers
             JSONout.media.transcripts.latest.words = wordlist.ToArray();
             var sJSONout = new JavaScriptSerializer().Serialize(JSONout);
 
+            //updated text srt file
+            string srtString = "";
+            int cnt = 0;
+            do
+            {
+                srtString += srtList[cnt].pos + "\n";
+                srtString += srtList[cnt].time + "\n";
+                srtString += srtList[cnt].content + "\n";
+                cnt++;
+            } while (cnt < srtList.Count);
+
+
             transcript.JSON = sJSONout;
+            transcript.Text_Sort = srtString;
             db.Entry(transcript).State = EntityState.Modified;
             db.SaveChanges();
 
@@ -672,6 +785,7 @@ namespace TorquexMediaPlayer.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Transcript transcript = db.Transcripts.Find(id);
+
             if (transcript == null)
             {
                 return HttpNotFound();
@@ -685,7 +799,9 @@ namespace TorquexMediaPlayer.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             Transcript transcript = db.Transcripts.Find(id);
-            db.Transcripts.Remove(transcript);
+            EventLoad.LogEvent(User.Identity.Name, transcript.Id, "Delete_Transcript", null, null, null, null);
+            transcript.Active = false;
+            db.Entry(transcript).State = EntityState.Modified;
             db.SaveChanges();
             return RedirectToAction("Index");
         }

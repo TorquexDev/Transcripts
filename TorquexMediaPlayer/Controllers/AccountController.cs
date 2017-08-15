@@ -79,6 +79,7 @@ namespace TorquexMediaPlayer.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    EventLoad.LogEvent(User.Identity.Name, null, "Account_Login", null, null, null, null);
                     return RedirectToLocal("~/Transcripts");
                 case SignInStatus.LockedOut:
                     return View("Lockout");
