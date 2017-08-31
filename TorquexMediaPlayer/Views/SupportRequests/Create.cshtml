@@ -1,4 +1,4 @@
-﻿@model TorquexMediaPlayer.Models.SupportRequest
+﻿@model TorquexMediaPlayer.Models.SupportView
 
 @{
     ViewBag.Title = "Create";
@@ -10,7 +10,8 @@
 @using (Html.BeginForm()) 
 {
     @Html.AntiForgeryToken()
-    
+    <input type="hidden" name="returnUrl" value="@ViewBag.returnUrl" />
+
     <div class="form-horizontal">
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
@@ -59,5 +60,5 @@
 }
 
 <div>
-    @Html.ActionLink("Back to List", "Index")
+    <a href="@ViewBag.returnUrl">Back to previous</a>
 </div>

@@ -40,6 +40,7 @@ namespace TorquexMediaPlayer.Controllers
         // GET: SupportRequests/Create
         public ActionResult Create()
         {
+            ViewBag.returnUrl = Request.UrlReferrer;
             return View();
         }
 
@@ -48,7 +49,7 @@ namespace TorquexMediaPlayer.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Subject,Details,Attachment,CreateBy,CreateDate,Email")] SupportRequest supportRequest)
+        public ActionResult Create([Bind(Include = "Id,Subject,Details,Attachment,CreateBy,CreateDate,Email")] SupportRequest supportRequest, string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -68,9 +69,9 @@ namespace TorquexMediaPlayer.Controllers
                 }
 
 
-                return RedirectToAction("Index");
+                return Redirect(returnUrl);
             }
-
+            ViewBag.ReturnUrl = returnUrl;
             return View(supportRequest);
         }
 

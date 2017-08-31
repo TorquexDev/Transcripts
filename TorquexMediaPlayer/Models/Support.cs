@@ -21,7 +21,9 @@ namespace TorquexMediaPlayer.Models
     public class SupportView
     {
         public int Id { get; set; }
+        [Required]
         public string Subject { get; set; }
+        [Required]
         public string Details { get; set; }
         [Display(Name = "Upload File")]
         [ValidateFile]

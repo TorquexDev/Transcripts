@@ -103,9 +103,7 @@ namespace TorquexMediaPlayer.Controllers
                 case "rtf":
                     fname = mediaid + ".docx";
                     filename = filepath + fname;
-                    var doc = DocX.Create(filename);
-                    doc.InsertParagraph(transcript.Text_Plain);
-                    doc.Save();
+                    CreateFormatWordDoc(filename, transcript.JSON);
                     break;
                 case "srt":
                     fname = mediaid + ".srt";
@@ -127,6 +125,52 @@ namespace TorquexMediaPlayer.Controllers
 
 
         }
+
+        private Boolean CreateFormatWordDoc(string filename, string jsonTranscript)
+        {
+            var json_serializer = new JavaScriptSerializer();
+            int splitTime = 1000;
+            int end = 500000;  // set large so we don't put a paragraph split at the start of the file.
+
+            Media VBJson = json_serializer.Deserialize<Media>(jsonTranscript);
+
+            DocX doc = DocX.Create(filename);
+            Paragraph p;
+
+            p = doc.InsertParagraph();
+
+            foreach (Words word in VBJson.media.transcripts.latest.words)
+            {
+                if (word.m != null)
+                {
+                    if (word.m == "turn")
+                    {
+                        p.Append("\n");
+                        p = doc.InsertParagraph();
+                        p.Append(word.w + " : ").Bold();
+                    } else if (word.m == "punc")
+                    {
+                        p.Append(word.w);
+                    } else
+                    {
+                        p.Append(" " + word.w);
+                    }
+                } else if ((word.s - end) > splitTime)
+                {
+                    p.Append("\n");
+                    p = doc.InsertParagraph();
+                    p.Append(word.w);
+                } else
+                {
+                    p.Append(" " + word.w);
+                }
+                end = word.e;
+            }
+
+            doc.Save();
+            return true;
+        }
+
 
         private Boolean CreateTimeStampWordDoc(string filename, string jsonTranscript)
         {
@@ -305,16 +349,41 @@ namespace TorquexMediaPlayer.Controllers
                     if (formdata.channel == "mono") transcript.Diarization = formdata.diarization;
 
                     HttpPostedFileBase file = httpFiles[i];
-                    transcript.Filename = file.FileName;
+                    transcript.Filename = Path.GetFileName(file.FileName);
 
 
                     // Split up files so we can rename and make unique
 
                     string ext = Path.GetExtension(file.FileName);
-                    string fn = Path.GetFileNameWithoutExtension(file.FileName);
+                    string fn = Path.GetFileName(file.FileName);
+                    fn = Path.GetFileNameWithoutExtension(fn);
                     string random = "_" + Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
 
                     transcript.PlayFile = fn + random + ext;
+
+
+
+                    // reset filestream to start
+                    if (file.InputStream.CanSeek)
+                    {
+                        file.InputStream.Seek(0, SeekOrigin.Begin);
+                    }
+                    // Save file to blob
+                    //Generates  a blobName 
+                    blockName = StringUtils.blockName(transcript.PlayFile);
+
+                    if (!string.IsNullOrEmpty(blockName))
+                    {
+                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                        //upload files 
+                        blob.UploadFromStream(file.InputStream);
+//                        file.InputStream.Dispose();
+                    }
+
+                    if (file.InputStream.CanSeek)
+                    {
+                        file.InputStream.Seek(0, SeekOrigin.Begin);
+                    }
 
 
                     // Send to Voicebase
@@ -344,7 +413,7 @@ namespace TorquexMediaPlayer.Controllers
                         string outFile = Server.MapPath("~/temp") + "\\" + fn + random + ".mp3";
                             file.SaveAs(inFile);
                             // Free up memory as we don't need this one any more
-                            file.InputStream.Dispose();
+//                            file.InputStream.Dispose();
 
                         var inputFile = new MediaFile { Filename = @inFile };
                         var outputFile = new MediaFile { Filename = @outFile };
@@ -352,7 +421,7 @@ namespace TorquexMediaPlayer.Controllers
                         using (var engine = new Engine(Server.MapPath("~/Content/ffmpeg.exe")))
                         {
                             engine.Convert(inputFile, outputFile);
-                            file.InputStream.Dispose();
+ //                           file.InputStream.Dispose();
                         }
                         blockName = StringUtils.blockName(outFile);
                         if (!string.IsNullOrEmpty(blockName))
@@ -371,23 +440,6 @@ namespace TorquexMediaPlayer.Controllers
 
                     }
 
-                    // Save input file to blob
-
-                    // reset filestream to start
-                    if (file.InputStream.CanSeek)
-                    {
-                        file.InputStream.Seek(0, SeekOrigin.Begin);
-                    }
-                    // Save file to blob
-                    //Generates  a blobName 
-                    blockName = StringUtils.blockName(transcript.PlayFile);
-
-                    if (!string.IsNullOrEmpty(blockName))
-                    {
-                        CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
-                        //upload files 
-                        blob.UploadFromStream(file.InputStream);
-                    }
 
 
                     
@@ -439,13 +491,6 @@ namespace TorquexMediaPlayer.Controllers
                     db.SaveChanges();
 
                 }
-
-
-
-
-                // Upload to voicebase
-
-
                 return RedirectToAction("Index");
             } else
             {
@@ -492,6 +537,7 @@ namespace TorquexMediaPlayer.Controllers
             client.BaseUrl = new Uri("https://apis.voicebase.com/v2-beta");
             var request = new RestRequest(Method.POST);
             request.Resource = "/media";
+ //           request.RequestFormat = DataFormat.Json;
             request.AddHeader("Authorization", "Bearer " + token);
             request.AddFile("media", file.InputStream.CopyTo, file.FileName, file.ContentType);
             request.Files[0].ContentLength = file.ContentLength;
@@ -502,8 +548,13 @@ namespace TorquexMediaPlayer.Controllers
 
             sconfig.executor = "v2";
             sconfig.language = transcript.Language;
+ //           sconfig.mediaURL = HttpUtility.UrlEncode(System.Configuration.ConfigurationManager.AppSettings["StorageBaseURL"] + transcript.PlayFile);
             sconfig.transcripts = new cfgtranscripts();
             sconfig.transcripts.engine = "premium";
+            sconfig.detections = new List<detections>();
+            detections model = new detections();
+            model.model = "PCI";
+            sconfig.detections.Add(model);
             
 
             // If custom vocabs set clean up and pass in
@@ -549,8 +600,10 @@ namespace TorquexMediaPlayer.Controllers
             var jsonconfig = new JavaScriptSerializer().Serialize(config_all);
 
 
- 
+
+ //           request.AddBody("mediaUrl="+System.Configuration.ConfigurationManager.AppSettings["StorageBaseURL"] + HttpUtility.UrlEncode(transcript.PlayFile));
             request.AddParameter("configuration", jsonconfig, ParameterType.RequestBody);
+            //            request.AddParameter("mediasUrl", System.Configuration.ConfigurationManager.AppSettings["StorageBaseURL"] + HttpUtility.UrlEncode(transcript.PlayFile), ParameterType.RequestBody);
             IRestResponse<MediaResponse> response = client.Execute<MediaResponse>(request);
             return response.Data.mediaId;
         }
