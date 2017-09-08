@@ -17,6 +17,7 @@ using System.IO;
 using MediaToolkit.Model;
 using MediaToolkit;
 using TorquexUtilities;
+using MediaToolkit.Options;
 
 namespace TorquexMediaPlayer.Controllers
 {
@@ -439,10 +440,51 @@ namespace TorquexMediaPlayer.Controllers
 
 
                     }
+                    // Check if file is avi and convert to mp4
+                    else if (ext.ToLower() == ".avi")
+                    {
+                        // reset filestream to start
+                        if (file.InputStream.CanSeek)
+                        {
+                            file.InputStream.Seek(0, SeekOrigin.Begin);
+                        }
+
+                        // write to local disk
+
+                        string inFile = Server.MapPath("~/temp") + "\\" + fn + random + ext;
+                        string outFile = Server.MapPath("~/temp") + "\\" + fn + random + ".mp4";
+                        file.SaveAs(inFile);
+                        // Free up memory as we don't need this one any more
+                        //                            file.InputStream.Dispose();
+
+                        var inputFile = new MediaFile { Filename = @inFile };
+                        var outputFile = new MediaFile { Filename = @outFile };
+
+
+                        using (var engine = new Engine(Server.MapPath("~/Content/ffmpeg.exe")))
+                        {
+                            engine.Convert(inputFile, outputFile);
+                            //                           file.InputStream.Dispose();
+                        }
+                        blockName = StringUtils.blockName(outFile);
+                        if (!string.IsNullOrEmpty(blockName))
+                        {
+                            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(blockName);
+                            //upload files 
+                            blob.UploadFromFile(outFile);
+                        }
+                        transcript.PlayFile = fn + random + ".mp4";
+
+                        // Clean up files on disk
+
+                        System.IO.File.Delete(@inFile);
+                        System.IO.File.Delete(@outFile);
+
+
+                    }
 
 
 
-                    
 
                     if (formdata.projectList != null)
                     {

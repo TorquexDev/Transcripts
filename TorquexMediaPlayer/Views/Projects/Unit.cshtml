@@ -6,6 +6,9 @@
 
 }
 
+@Html.ActionLink("Create Transcripts", "downloadTranscript", new { projectid = Model.ID });
+
+
 <div>
 @using (Html.BeginForm("Unit", "Projects", FormMethod.Get))
 {

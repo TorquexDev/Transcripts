@@ -15,6 +15,8 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using TorquexUtilities;
 using System.Text;
+using System.Web.Script.Serialization;
+using Novacode;
 
 namespace TorquexMediaPlayer.Controllers
 {
@@ -30,6 +32,74 @@ namespace TorquexMediaPlayer.Controllers
             EventLoad.LogEvent(User.Identity.Name, null, "List_Projects", null, null, null, null);
             return View(projects.ToList());
 
+        }
+
+        [AllowAnonymous]
+        public Boolean downloadTranscript(int projectid)
+        {
+                var transcripts = from s in db.Transcripts select s;
+                transcripts = transcripts.Where(s => s.ProjectId  == projectid);
+                string filepath = Server.MapPath("~/temp/");
+                string fname;
+                string filename;
+
+                foreach (var transcript in transcripts)
+                {
+                    fname = System.IO.Path.GetFileNameWithoutExtension(transcript.Filename);
+                    filename = filepath + fname + ".docx";
+                    CreateFormatWordDoc(filename, transcript.JSON);
+                }
+
+            return true;
+        }
+
+        private Boolean CreateFormatWordDoc(string filename, string jsonTranscript)
+        {
+            var json_serializer = new JavaScriptSerializer();
+            int splitTime = 1000;
+            int end = 500000;  // set large so we don't put a paragraph split at the start of the file.
+
+            Media VBJson = json_serializer.Deserialize<Media>(jsonTranscript);
+
+            DocX doc = DocX.Create(filename);
+            Paragraph p;
+
+            p = doc.InsertParagraph();
+
+            foreach (Words word in VBJson.media.transcripts.latest.words)
+            {
+                if (word.m != null)
+                {
+                    if (word.m == "turn")
+                    {
+                        p.Append("\n");
+                        p = doc.InsertParagraph();
+                        p.Append(word.w + " : ").Bold();
+                    }
+                    else if (word.m == "punc")
+                    {
+                        p.Append(word.w);
+                    }
+                    else
+                    {
+                        p.Append(" " + word.w);
+                    }
+                }
+                else if ((word.s - end) > splitTime)
+                {
+                    p.Append("\n");
+                    p = doc.InsertParagraph();
+                    p.Append(word.w);
+                }
+                else
+                {
+                    p.Append(" " + word.w);
+                }
+                end = word.e;
+            }
+
+            doc.Save();
+            return true;
         }
 
         // GET: Projects/Details/5
