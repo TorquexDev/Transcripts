@@ -48,6 +48,7 @@ namespace TorquexMediaPlayer.Controllers
                     string JSON = GetTranscript(trans.mediaId, token);
                     string PlainText = "";
                     string PlainSrt = "";
+                    string PlainVtt = "";
 
                     string status = "";
                     try
@@ -59,6 +60,9 @@ namespace TorquexMediaPlayer.Controllers
                         {
                             PlainText = GetTranscriptPlain(trans.mediaId, token);
                             PlainSrt = GetTranscriptPlainSrt(trans.mediaId, token);
+                            PlainVtt = GetTranscriptPlainVtt(trans.mediaId, token);
+                            trans.Duration = VBresponse.media.metadata.length.milliseconds;
+                            trans.WordCount = VBresponse.media.transcripts.latest.words.Count();
                             if (trans.Diarization) JSON = diarize(JSON);
                         }
                         else
@@ -70,6 +74,7 @@ namespace TorquexMediaPlayer.Controllers
                         trans.VBstatus = status;
                         trans.Text_Plain = PlainText;
                         trans.Text_Sort = PlainSrt;
+                        trans.Text_Vtt = PlainVtt;
                         trans.JSON = JSON;
                         db.Entry(trans).State = EntityState.Modified;
 
@@ -125,6 +130,20 @@ namespace TorquexMediaPlayer.Controllers
             IRestResponse response = client.Execute(request);
             return response.Content;
         }
+
+
+        static string GetTranscriptPlainVtt(string mediaId, string token)
+        {
+            var client = new RestClient();
+            client.BaseUrl = new Uri("https://apis.voicebase.com/v2-beta");
+            var request = new RestRequest();
+            request.Resource = "/media/" + mediaId + "/transcripts/latest";
+            request.AddHeader("Authorization", "Bearer " + token);
+            request.AddHeader("Accept", "text/vtt");
+            IRestResponse response = client.Execute(request);
+            return response.Content;
+        }
+
 
         private string diarize(string JSON)
         {

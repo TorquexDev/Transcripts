@@ -1,0 +1,91 @@
+﻿@model TorquexMediaPlayer.Models.PublicProject
+
+@{
+    ViewBag.Title = Model.ProjectName;
+    Layout = "~/Views/Shared/_LayoutPub.cshtml";
+
+}
+
+@Html.ActionLink("Create Transcripts", "downloadTranscript", new { projectid = Model.ID });
+
+
+<div>
+@using (Html.BeginForm("Unit", "Projects", FormMethod.Get))
+{
+    <table class="table">
+        <tr>
+            <td></td>
+            <td>
+                <h3>@Html.DisplayFor(model => model.DeptName)</h3><br><br>
+                <h1>@Html.DisplayFor(model => model.PageTitle)</h1>
+            </td>
+            <td align="right"><img src="@Html.ValueFor(model => model.PageLogo)" height="150px" alt='Logo' title="Logo" /></td>
+            <td></td>
+        </tr>
+    </table> 
+
+    <div style="float:right; display:inline-block; margin-bottom:10px;">
+        <span style="display:inline-block; ">Find files containing:</span> @Html.TextBox("SearchString", ViewBag.CurrentFilter as string, new { @style = "display:inline-block; width:120px;", @class = "form-control" })
+        <input class="btn btn-default" style="display:inline-block" type="submit" value="Search" />
+    </div>
+}
+    <table class="table">
+        <tr>
+            <th>
+                Lecture Name
+            </th>
+            <th>
+                Date Posted
+            </th>
+            <th>
+                Duration
+            </th>
+            <th class="actionLinks"></th>
+        </tr>
+        @foreach (var item in Model.Transcripts)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Filename)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreateTime)
+                </td>
+                <td>
+                    @{ 
+                        string timeString;
+                        if (item.Duration != null)
+                        {
+                            TimeSpan t = TimeSpan.FromMilliseconds(System.Convert.ToDouble(item.Duration));
+                            timeString = string.Format("{0:D2}h:{1:D2}m:{2:D2}s",
+                                                    t.Hours,
+                                                    t.Minutes,
+                                                    t.Seconds,
+                                                    t.Milliseconds);
+                        } else
+                        {
+                            timeString = "";
+                        }
+
+                    }
+                    @timeString;
+                </td>
+                <td class="actionLinks">
+                    @Html.ActionLink("Play", "Play", new { id = item.Id }, new { @class = "playLink" })
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="4">
+                <div class="bodyclass" ; style="width: 95%; margin: 0px auto;">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @Html.ActionLink("My Units", "Index")
+                    }
+                <br><br>@Html.DisplayFor(model => model.PageFooter)</div>
+            </td>
+        </tr>
+
+
+    </table>
+</div>

@@ -1,84 +1,180 @@
 ﻿@model PagedList.IPagedList<TorquexMediaPlayer.Models.Transcript>
 @using PagedList.Mvc;
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Your Transcripts";
 }
 
-<h2>Index</h2>
 
-    @using (Html.BeginForm("Index", "Transcripts", FormMethod.Get))
-    {
-        <p>@Html.ActionLink("Upload New File", "Create", null, new { @style = "float:left; display:inline-block" })
-            <div style="float:left; margin-left:10px; margin-right:10px; display:inline-block">|</div>
-           @Html.ActionLink("Check transcription status", "StatusUpdate", null, new { @style = "float:left; display:inline-block" })
-            <div style="float:right; display:inline-block; margin-bottom:10px;">
-                <span style="display:inline-block; ">Find files containing:</span> @Html.TextBox("SearchString", ViewBag.CurrentFilter as string, new { @style = "display:inline-block; width:120px;", @class="form-control" } )
-                <input class="btn btn-default" style="display:inline-block" type="submit" value="Search" />
-            </div>
-        </p>
-    }
+<img id="createhelpbtn" src="~/images/if_help_36102.png"  onmouseover="" alt="help" style="float:right; margin: 10px; cursor: pointer;" />
+<h2>Your Transcripts</h2>
+
+
+
+<div id="helpmodal" class="help_modal">
+    <div class="modal_contents">
+        <span class="close">
+            &times;
+        </span>
+        <h4 style="text-decoration:underline; float:initial">HELP CONTENTS</h4>
+        <p>This page helps you to manage all your transcriptions, upload a file for transcription and check transaction status.</p>
+        <p style="font:bold 12px;text-decoration:underline">Manage Transcriptions</p>
+        <p>List of all active transcription displaying name, creation time, status, project and submitted by with option to change order of display by clicking on title</p>
+        <p>Per line the following functions are enabled:</p>
+        <p><img src="~/images/play-btn-small.png" />&nbsp;Run Torquex Media Player </p>
+        <p><img src="~/images/edit-btn-active.png"/>&nbsp;Edit Transcription Details</p>
+        <p><img src="~/images/clear_active.png"/>&nbsp;Delete Transcription File</p>
+
+        <p style="font:bold 12px;text-decoration:underline">Upload new file</p>
+        <p>Upload a voice recording, starting the transcription and analysis process. Once submitted it will get status ‘submitted’ and starts transcription process in the background with status ‘running’. When completed and ready to view, status will be ‘finished’ or ‘failed’.</p>
+        <p style="font:bold 12px;text-decoration:underline">Check transcription status</p>
+        <p>This will review status of all transcriptions and update list.</p>
+
+
+        <p style="font:bold 12px;text-decoration:underline">Possible Status of transcription</p>
+        <p><strong>Submitted – </strong> Media file has been submitted to transcription engine</p>
+        <p><strong>Running – </strong>Media file is in the process of transcription</p>
+        <p><strong>Finished – </strong>Media file has been successfully transcribed and is ready for viewing</p>
+        <p><strong>Failed – </strong>Transcription of Media file failed ! How to figure out the reason of the failure ?</p>
+        
+        <p style="font:bold 12px;text-decoration:underline">Search find files containing</p>
+        <p><img style="width:50%;height:50%;" src="~/images/help_search.png"/></p>
+        <p>The search button allows you to search all Media files for keywords or phrases entered and return list of media Files containing requested search criteria.</p>
+
+    </div>
+</div>
+
+@using (Html.BeginForm("Index", "Transcripts", FormMethod.Get))
+{
+    <p>
+        @Html.ActionLink("Upload New File", "Create", null, new { @style = "float:left; display:inline-block" })
+        <div style="float:left; margin-left:10px; margin-right:10px; display:inline-block">|</div>
+        @Html.ActionLink("Check transcription status", "StatusUpdate", null, new { @style = "float:left; display:inline-block" })
+        <div style="float:right; display:inline-block; margin-bottom:10px;">
+            <span style="display:inline-block; ">Find files containing:</span> @Html.TextBox("SearchString", ViewBag.CurrentFilter as string, new { @style = "display:inline-block; width:120px;", @class = "form-control" })
+            <input class="btn btn-default" style="display:inline-block" type="submit" value="Search" />
+        </div>
+    </p>
+}
 
 
 <table class="table">
     <tr>
         <th>
-            @Html.ActionLink("File Name", "Index", new {sortOrder = ViewBag.FileNameSortParm, currentFilter = ViewBag.CurrentFilter })
+            @Html.ActionLink("Unit/Subject", "Index", new { sortOrder = ViewBag.ProjectSortParm, currentFilter = ViewBag.CurrentFilter })
         </th>
         <th>
-            @Html.ActionLink("Create Time", "Index", new { sortOrder = ViewBag.CreateTimeSortParm, currentFilter = ViewBag.CurrentFilter })
+            @Html.ActionLink("File Name", "Index", new { sortOrder = ViewBag.FileNameSortParm, currentFilter = ViewBag.CurrentFilter })
         </th>
         <th>
             @Html.DisplayNameFor(model => model.First().VBstatus)
         </th>
         <th>
-            @Html.ActionLink("Project", "Index", new { sortOrder = ViewBag.ProjectSortParm, currentFilter = ViewBag.CurrentFilter })
+            @Html.ActionLink("Create Time", "Index", new { sortOrder = ViewBag.CreateTimeSortParm, currentFilter = ViewBag.CurrentFilter })
         </th>
         <th>
             @Html.DisplayNameFor(model => model.First().createby)
         </th>
-        <th class="actionLinks"></th><th class="actionLinks"></th></th><th class="actionLinks"></th>
+        <th class="actionLinks"></th>
+        <th class="actionLinks"></th>
+        <th class="actionLinks"></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Filename)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CreateTime)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.VBstatus)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Project)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.createby)
-        </td>
-        @if (item.VBstatus == "finished")
-        {
-            <td class="actionLinks">
-                @Html.ActionLink("Play", "Play", new { id = item.Id }, new { @class = "playLink" })
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Project)
             </td>
-        } else
-        {
-            <td class="actionLinks"></td>
-        }
-        <td class="actionLinks">|
-            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "editLink" })
-        </td>
-        <td class="actionLinks">| 
-            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "cancelLink" })
-        </td>
-    </tr>
-}
+            <td>
+                @Html.DisplayFor(modelItem => item.Filename)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VBstatus)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreateTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.createby)
+            </td>
+            @if (item.VBstatus == "finished")
+                {
+                <td class="actionLinks">
+                    @Html.ActionLink("Play", "Play", new { id = item.Id }, new { @class = "playLink" })
+                </td>
+            }
+            else
+            {
+                <td class="actionLinks"></td>
+            }
+            <td class="actionLinks">
+                |
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "editLink" })
+            </td>
+            <td class="actionLinks">
+                |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "cancelLink" })
+            </td>
+        </tr>
+    }
 
 </table>
-<br />
-Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+<script type="text/javascript">
+    var modal = document.getElementById('helpmodal');
+    var helpbtn = document.getElementById("createhelpbtn");
+    var span = document.getElementsByClassName("close")[0];
+    helpbtn.onclick = function () {
+        modal.style.display = "block";
+    }
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+</script>
 
-@Html.PagedListPager(Model, page => Url.Action("Index",
+
+<style>
+    .help_modal {
+        display: none;
+        position: fixed;
+        z-index: 120;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal_contents {
+        background-color: #fefefe;
+        border-radius: 25px;
+        margin: 4% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%;
+    }
+
+    .close {
+        color: #aaa;
+        float: initial right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+</style>
+<br />
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+    @Html.PagedListPager(Model, page => Url.Action("Index",
     new { page, sortOrder = ViewBag.CurrentSort, currentFilter = ViewBag.CurrentFilter }))

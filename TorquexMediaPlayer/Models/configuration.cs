@@ -40,12 +40,18 @@ namespace TorquexMediaPlayer.Models
         public string speaker { get; set; }
     }
 
+    public class detections
+    {
+        public string model { get; set; }
+    }
+
     public class configuration
     {
         public string executor { get; set; }
         public string language { get; set; }
         public cfgtranscripts transcripts { get; set; }
         public cfgingest ingest { get; set; }
+        public List<detections> detections { get; set; }
 
     }
 

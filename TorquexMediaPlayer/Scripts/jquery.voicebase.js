@@ -88,7 +88,7 @@ var voiceBase = (function($) {
         transcriptHighlight: 10,
         transcriptCheckTimer: 10,
         turnTimes: !0,
-        lineBreak: !1,
+        lineBreak: !0,
         commentsBlock: 'vbs-comments',
         humanOnly: !1,
         animation: !0,
@@ -273,7 +273,7 @@ var voiceBase = (function($) {
                 VB.settings.localSearch = true;
             }
             VB.settings.showCommentsBlock = false;
-            VB.settings.vbsButtons.edit = true;
+//            VB.settings.vbsButtons.edit = true;
             VB.settings.vbsButtons.downloadMedia = false;
             VB.settings.vbsButtons.downloadTranscript = true;
             VB.settings.vbsButtons.favorite = false;
@@ -1016,9 +1016,10 @@ voiceBase = (function(VB, $) {
         },
         responseSaveTrancript: function(data, args) {
             if (data.requestStatus == 'SUCCESS') {
-                setTimeout(function() {
+                VB.transcript.view.saveTranscriptComplete(data.id);
+ /*               setTimeout(function () {
                     VB.api.triggerTranscriptStatus();
-                }, VB.settings.transcriptCheckTimer * 1000);
+                }, VB.settings.transcriptCheckTimer * 1000);*/
             } else {
                 VB.transcript.view.saveTranscriptError(data.statusMessage);
             }
@@ -1073,7 +1074,7 @@ voiceBase = (function(VB, $) {
             var ie9 = (VB.common.isIe() === 9);
 
             jQuery.ajax({
-                url: VB.settings.apiUrl,
+                url: "/Transcripts/Update",
                 type: 'POST',
                 data: parameters,
                 dataType: (ie9) ? "jsonp" : "json"
@@ -2098,12 +2099,18 @@ voiceBase = (function(VB, $) {
                 e.preventDefault();
                 var $this = $(this);
                 var $vbs_tooltip = $('.vbs-tooltip');
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = null;
+                
+
                 if (!$this.hasClass("vbs-playing")) {
                     VB.helper.track('play');
                     $this.addClass('vbs-playing').attr("data-title", "Pause");
                     $vbs_tooltip.text("Pause");
                     VB.helper.showLoader();
-                   
+                    Tparams.eventType = "Play";
+                    VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                     VB.PlayerApi.play();
                     
                 } else {
@@ -2111,6 +2118,8 @@ voiceBase = (function(VB, $) {
                     VB.helper.track('pause');
                     $vbs_tooltip.text("Play");
                     VB.helper.hideLoader();
+                    Tparams.eventType = "Pause";
+                    VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                     VB.PlayerApi.pause();
                 }
                 return false;
@@ -2142,6 +2151,11 @@ voiceBase = (function(VB, $) {
                 var btime = VB.PlayerApi.getPosition();
                 VB.PlayerApi.seek(btime);
                 theVideo.playbackRate = 1.0;
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = "1";
+                Tparams.eventType = "Play_Speed";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                 document.getElementById("vbs-playback-dropdown-id").classList.toggle("vbs-playback-show");
                 //document.getElementById("vbs-playback-title-id").textContent = "PlaybackSpeed: X" + theVideo.playbackRate;
                 return false;
@@ -2153,6 +2167,11 @@ voiceBase = (function(VB, $) {
                 var btime = VB.PlayerApi.getPosition();
                 VB.PlayerApi.seek(btime);
                 theVideo.playbackRate = 1.5;
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = "1.5";
+                Tparams.eventType = "Play_Speed";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                 document.getElementById("vbs-playback-dropdown-id").classList.toggle("vbs-playback-show");
                 //document.getElementById("vbs-playback-title-id").textContent = "PlaybackSpeed: X" + theVideo.playbackRate;
                 return false;
@@ -2164,6 +2183,11 @@ voiceBase = (function(VB, $) {
                 var btime = VB.PlayerApi.getPosition();
                 VB.PlayerApi.seek(btime);
                 theVideo.playbackRate = 2.0;
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventValue = "2.0";
+                Tparams.eventType = "Play_Speed";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
                 document.getElementById("vbs-playback-dropdown-id").classList.toggle("vbs-playback-show");
                 //document.getElementById("vbs-playback-title-id").textContent ="Playbackspeed: X" +  theVideo.playbackRate;
                 return false;
@@ -2636,6 +2660,36 @@ voiceBase = (function(VB, $) {
             });
 
             // Fullscreen btn
+            VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-expand-btn-prt', function (event) {
+                event.preventDefault();
+                var x = document.getElementsByClassName("playlist-none vbs-player-wrapper");
+                var h = parseInt(x[0].style.height);
+                if (h < 700) {
+                    x[0].style.height = (h * 1.2) + "px";
+                }
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Video_Size";
+                Tparams.eventValue = x[0].style.height;
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+            });
+
+            VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-shrink-btn-prt', function (event) {
+                event.preventDefault();
+                var x = document.getElementsByClassName("playlist-none vbs-player-wrapper");
+                var h = parseInt(x[0].style.height);
+                if (h > 270) {
+                    x[0].style.height = (h / 1.2) + "px";
+                }
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Video_Size";
+                Tparams.eventValue = x[0].style.height;
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+            });
+
+
+            // Fullscreen btn
             VB.helper.find('.vbs-section-btns').on(eventsTypes, '.vbs-expand-btn', function(event) {
                 event.preventDefault();
                 if (typeof VB.settings.webHooks.fullscreen != 'undefined') {
@@ -2664,6 +2718,14 @@ voiceBase = (function(VB, $) {
                 }
                 VB.view.resizeTimelineElements();
                 VB.news.view.collapseNewsBlock();
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Video_Size";
+                Tparams.eventValue = "Full Screen";
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+
+
+
                 return false;
             });
 
@@ -4509,6 +4571,13 @@ voiceBase = (function(VB, $) {
                 var term = VB.keywords.termFor(termstring, 'url');
                 var markerterms = VB.keywords.termFor(termstring, 'marker');
 
+                var Tparams = new Object();
+                Tparams.mediaId = VB.settings.mediaId;
+                Tparams.eventType = "Search_Click";
+                Tparams.eventValue = termstring;
+                VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+
+
                 VB.helper.find('#vbs-voice_search_txt').val(term).change();
                 $elem.addClass('bold');
                 if (markerterms.length) {
@@ -4654,6 +4723,14 @@ voiceBase = (function(VB, $) {
                     VB.helper.showLoader();
                     VB.view.searchWordWidget(words);
                     VB.api.getSearch(words);
+                    var Tparams = new Object();
+                    Tparams.mediaId = VB.settings.mediaId;
+                    Tparams.eventType = "Search";
+                    var arrayLength = words.length;
+                    for (var i = 0; i < arrayLength; i++) {
+                        Tparams.eventValue = words[i];
+                        VB.api.callCustom("/Player/EventLog", Tparams, null, null);
+                    }
 /*					var arrayLength = words.length;
 					for (var i = 0; i < arrayLength; i++) {
 						_trackEvent('Free Text Search','Search Click', words[i]);
@@ -6617,6 +6694,28 @@ voiceBase = (function(VB, $) {
                     isTurn = false,
                     last = 0;
                 var dt_length = dt.length;
+                var pKey = 0;
+                // create an array of start times for the keyword highlighting.
+                var KeyTime = function (st, name) {
+                    this.st = st;
+                    this.name = name;
+                };
+                var KeyTimes = [];
+
+                for (var i = 0; i < VB.keywords.data.categories.length; i++) {
+                    var categories = VB.keywords.data.categories[i];
+                    for (var j = 0; j < categories.keywords.length; j++) {
+                        var keywords = categories.keywords[j];
+                        $.each(keywords.t, function (index, value) {
+                            for (var k = 0; k < value.length; k++) {
+                                KeyTimes.push(new KeyTime(value[k] * 1000, keywords.name));
+                            }
+                        });
+                    }
+                }
+
+                var found = -1;
+
                 for (var i = 0; i < dt_length; i++) {
                     var val = dt[i];
                     if (i === 0) {
@@ -6630,13 +6729,44 @@ voiceBase = (function(VB, $) {
 
                     isTurn = VB.transcript.isTurn(val.m);
                     var sptag = VB.speakers.createSpeakerAttr(val);
+                    var style = '';
 
                     var br = (isTurn && i > 2) ? '<br/><br/>' : '';
                     var br2 = (VB.settings.lineBreak && typeof dt[i - 1] !== "undefined" && dt[i].s - dt[i - 1].e > VB.settings.lineBreak * 1000) ? '<br/><br/>' : '';
                     fw = (i === 0 && typeof val.m === "undefined") ? 'data-f=true' : '';
                     var word = VB.common.replaceN(val.w);
+
+                    if (typeof val.m === "undefined")  // not turn or punctuation check if part of keyword.
+                    {
+
+                        
+                        if (found === -1) {
+                            $.each(KeyTimes, function (index, value) {
+                                if (value.st == dt[i].s) found = index;
+                            });
+                        }
+
+                        if (found !== -1) {
+                            var keyArray = KeyTimes[found].name.split(' ');
+                            if (pKey < keyArray.length) {
+                                var fullMatch = 1;
+                                for (var j = 0; j < keyArray.length; j++) {
+                                    if (keyArray[j].toLowerCase() !== dt[i + j - pKey].w.toLowerCase()) fullMatch = 0;
+                                }
+                                if (fullMatch === 1) {
+                                    pKey++;
+                                    style = ' style="font-weight:bold;" ';
+                                }
+                            } else found = -1;
+                        } else pKey = 0;
+
+                    } else {
+                        pKey = 0;
+                        found = -1;
+                    }
+
                     transpart += val.w.match(/\w+/g)
-                        ? br + br2 + '<span class="w vbs-trans-word" t="' + val.s + '" ' + sptag + ' ' + fw + '> ' + word + '</span>'
+                        ? br + br2 + '<span class="w vbs-trans-word" t="' + val.s + '" ' + sptag + ' ' + fw + style + '> ' + word + '</span>'
                         : '<span class="vbs-punc vbs-trans-word" t="' + val.s + '" ' + sptag + '>' + word + '</span>';
                 }
 
@@ -6797,7 +6927,31 @@ voiceBase = (function(VB, $) {
                 var div = document.createElement("div");
                 div.innerHTML = html;
                 var content = div.textContent || div.innerText || "";
-                VB.api.saveTrancript(content.trim());
+
+                var x = document.getElementsByClassName("vbs-wd");
+                var i;
+                var param = {}
+                var words = [];
+                for (i = 0; i < x.length; i++) {
+
+                    var word = {}
+                    word["p"] = i;
+                    word["s"] = x[i].getAttribute("t");
+                    word["m"] = x[i].getAttribute("m");
+                    if (x[i].innerText) {
+                        word["w"] = x[i].innerText;
+                    }
+                    else
+                        if (x[i].textContent) {
+                            word["w"] = x[i].textContent;
+                        }
+                    words.push(word);
+                }
+
+                param["mediaId"] = VB.settings.mediaId;
+                param["words"] = words;
+
+                VB.api.saveTrancript(words);
 
                 var $save_popup_wrapper = VB.helper.find('.vbs-save-popup-wrapper');
                 if(VB.settings.modalSave) {
@@ -6810,14 +6964,15 @@ voiceBase = (function(VB, $) {
                 }
             },
 
-            saveTranscriptComplete: function() {
+            saveTranscriptComplete: function(id) {
                 VB.transcript.view.setIsSaving(false);
-                VB.view.initAfterSaveTranscript();
+                window.open("/Transcripts/Play/" + id, "_self");
+/*                VB.view.initAfterSaveTranscript();
                 VB.data.waiterSave = setInterval(function() {
                     if(VB.data.waiterSave) {
                         VB.helper.waitReadyAfterSave();
                     }
-                }, 100);
+                }, 100);*/
             },
 
             showSaveQuestion: function() {
@@ -7344,7 +7499,7 @@ voiceBase = (function(VB, $) {
   
   templates['keywords/keywordsBlock']  = templates['keywords/keywordsBlock.ejs'] = function(it) {
     var locals = it, __output = "";
-    ; var tabClass = (locals.tabView) ? 'vbs-tab' : '' ;__output += "\n";; var hasFilepickerBtn = locals.vbsButtons.evernote && typeof filepicker !== 'undefined'; ;__output += "\n\n<div class=\"vbs-keywords-block ";;__output += escape(tabClass);__output += "\">\n    <div class=\"vbs-section-header\">\n        <div class=\"vbs-section-title\" data-title=\"Hide Keywords\">\n            <span class=\"vbs-section-name\">Keywords</span>\n        </div>\n        \n        <div class=\"vbs-search-form vbs-no-speaker ";; if(hasFilepickerBtn) { ;__output += " vbs-one-btn ";; } else { ;__output += " vbs-no-btns ";; } ;__output += "\">\n            ";; if(!locals.searchBarOuter) { ;__output += "\n            <form action=\"#\" id=\"vbs-search-form\">\n                <div class=\"vbs-widget-wrap\">\n                    <div class=\"vbs-widget\">\n                        <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search Keywords...\" autocomplete=off>\n                        <div id=\"vbs-search-string\">\n                            <div class=\"vbs-marquee\">\n                                <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                        ";; if(locals.vbsButtons.pwrdb) { ;__output += "\n                        <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                        ";; } ;__output += "\n                    </div>\n                    <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n                </div>\n                ";; if(locals.vbsButtons.unquotes) { ;__output += "\n                <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n                ";; } ;__output += "\n\n                <div class=\"vbs-search-btn\" data-title=\"Search\">\n                    <button type=\"submit\"></button>\n                </div>\n            </form>\n            ";; } ;__output += "\n\n            <div class=\"vbs-select-speaker-wrapper\">\n                <div class=\"vbs-select-speaker\">Select speaker...</div>\n                <ul class=\"vbs-speaker-dropdown vbs-select-dropdown\"></ul>\n            </div>\n        </div>\n\n        ";; if(hasFilepickerBtn) { ;__output += "\n        <div class=\"vbs-section-btns\">\n            <ul>\n                <li>\n                    <a href=\"#\" class=\"vbs-evernote-btn\" data-title=\"Send to Evernote\"></a>\n                </li>\n            </ul>\n        </div>\n        ";; } ;__output += "\n\n        <div class=\"clear-block\"></div>\n    </div>\n    <!-- / section header-->\n    \n    <div class=\"vbs-section-body\">\n        <div class=\"vbs-keywords-wrapper vbs-scroll\" style=\"height: ";;__output += escape(voiceBase.settings.keywordsHeight);__output += "px;\">\n            <div class=\"vbs-topics\"></div>\n            <div class=\"vbs-keywords-list-wrapper\">\n                <div class=\"vbs-keywords-list-tab\"></div>\n            </div>\n            <div class=\"clear-block\"></div>\n        </div>\n\n        ";; if(voiceBase.settings.showMore) { ;__output += "\n        <div class=\"vbs-more-btn\"><a href=\"#\">Show More...</a></div>\n        ";; } ;__output += "\n    </div>\n</div>\n";
+    ; var tabClass = (locals.tabView) ? 'vbs-tab' : '' ;__output += "\n";; var hasFilepickerBtn = locals.vbsButtons.evernote && typeof filepicker !== 'undefined'; ;__output += "\n\n<div class=\"vbs-keywords-block ";;__output += escape(tabClass);__output += "\">\n    <div class=\"vbs-section-header\">\n        <div class=\"vbs-section-title\" data-title=\"Hide Keywords\">\n            <span class=\"vbs-section-name\">Keywords</span>\n        </div>\n        \n        <div class=\"vbs-search-form vbs-no-speaker ";; if(hasFilepickerBtn) { ;__output += " vbs-one-btn ";; } else { ;__output += " vbs-no-btns ";; } ;__output += "\">\n            ";; if(!locals.searchBarOuter) { ;__output += "\n            <form action=\"#\" id=\"vbs-search-form\">\n                <div class=\"vbs-widget-wrap\">\n                    <div class=\"vbs-widget\">\n                        <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search for a word or words...\" autocomplete=off>\n                        <div id=\"vbs-search-string\">\n                            <div class=\"vbs-marquee\">\n                                <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                        ";; if(locals.vbsButtons.pwrdb) { ;__output += "\n                        <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                        ";; } ;__output += "\n                    </div>\n                    <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n                </div>\n                ";; if(locals.vbsButtons.unquotes) { ;__output += "\n                <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n                ";; } ;__output += "\n\n                <div class=\"vbs-search-btn\" data-title=\"Search\">\n                    <button type=\"submit\"></button>\n                </div>\n            </form>\n            ";; } ;__output += "\n\n            <div class=\"vbs-select-speaker-wrapper\">\n                <div class=\"vbs-select-speaker\">Select speaker...</div>\n                <ul class=\"vbs-speaker-dropdown vbs-select-dropdown\"></ul>\n            </div>\n        </div>\n\n        ";; if(hasFilepickerBtn) { ;__output += "\n        <div class=\"vbs-section-btns\">\n            <ul>\n                <li>\n                    <a href=\"#\" class=\"vbs-evernote-btn\" data-title=\"Send to Evernote\"></a>\n                </li>\n            </ul>\n        </div>\n        ";; } ;__output += "\n\n        <div class=\"clear-block\"></div>\n    </div>\n    <!-- / section header-->\n    \n    <div class=\"vbs-section-body\">\n        <div class=\"vbs-keywords-wrapper vbs-scroll\" style=\"height: ";;__output += escape(voiceBase.settings.keywordsHeight);__output += "px;\">\n            <div class=\"vbs-topics\"></div>\n            <div class=\"vbs-keywords-list-wrapper\">\n                <div class=\"vbs-keywords-list-tab\"></div>\n            </div>\n            <div class=\"clear-block\"></div>\n        </div>\n\n        ";; if(voiceBase.settings.showMore) { ;__output += "\n        <div class=\"vbs-more-btn\"><a href=\"#\">Show More...</a></div>\n        ";; } ;__output += "\n    </div>\n</div>\n";
     return __output.trim();
   };
   
@@ -7476,7 +7631,7 @@ voiceBase = (function(VB, $) {
   
   templates['players/expandBtn']  = templates['players/expandBtn.ejs'] = function(it) {
     var locals = it, __output = "";
-    ;__output += "<li>\n    <a href=\"#\" class=\"vbs-expand-btn\" data-title=\"Expand Video\"></a>\n</li>";
+    ; __output += "<li>\n    <a href=\"#\" class=\"vbs-shrink-btn-prt\" data-title=\"Shrink Video\"></a>\n</li><li>\n    <a href=\"#\" class=\"vbs-expand-btn-prt\" data-title=\"Expand Video\"></a>\n</li><li>\n    <a href=\"#\" class=\"vbs-expand-btn\" data-title=\"Expand Video Full\"></a>\n</li>";
     return __output.trim();
   };
   
@@ -7506,7 +7661,7 @@ voiceBase = (function(VB, $) {
   
   templates['search/searchBarOuter']  = templates['search/searchBarOuter.ejs'] = function(it) {
     var locals = it, __output = "";
-    ;__output += "<div id=\"vbs-searchbar-block\">\n    <div class=\"vbs-search-form vbs-no-speaker\">\n        <form action=\"#\" id=\"vbs-search-form\">\n            <div class=\"vbs-widget-wrap\">\n                <div class=\"vbs-widget\">\n                    <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search Keywords...\" autocomplete=off>\n                    <div id=\"vbs-search-string\">\n                        <div class=\"vbs-marquee\">\n                            <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                    ";; if(voiceBase.settings.vbsButtons.pwrdb) { ;__output += "\n                    <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                    ";; } ;__output += "\n                </div>\n                <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n            </div>\n\n            ";; if(voiceBase.settings.vbsButtons.unquotes) { ;__output += "\n            <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n            ";; } ;__output += "\n\n            <div class=\"vbs-search-btn\" data-title=\"Search\">\n               <button type=\"submit\"></button>\n            </div>\n        </form>\n    </div>\n</div>\n";
+    ;__output += "<div id=\"vbs-searchbar-block\">\n    <div class=\"vbs-search-form vbs-no-speaker\">\n        <form action=\"#\" id=\"vbs-search-form\">\n            <div class=\"vbs-widget-wrap\">\n                <div class=\"vbs-widget\">\n                    <input name=\"get_voice_search\" value=\"\" size=\"20\" id=\"vbs-voice_search_txt\" class=\"vbs-formfields\" type=\"text\" placeholder=\"Search for a word or words...\" autocomplete=off>\n                    <div id=\"vbs-search-string\">\n                        <div class=\"vbs-marquee\">\n                            <div class=\"vbs-search-word-widget\"></div>\n                            </div>\n                        </div>\n                    ";; if(voiceBase.settings.vbsButtons.pwrdb) { ;__output += "\n                    <span class=\"vbs-powered-by-label\">Powered by Torquex</span>\n                    ";; } ;__output += "\n                </div>\n                <a href=\"#\" id=\"vbs-clear-string\" title=\"Clear String\"></a>\n            </div>\n\n            ";; if(voiceBase.settings.vbsButtons.unquotes) { ;__output += "\n            <a href=\"javascript:void(0)\" class=\"vbs-unquote-btn\">Unquoted</a>\n            ";; } ;__output += "\n\n            <div class=\"vbs-search-btn\" data-title=\"Search\">\n               <button type=\"submit\"></button>\n            </div>\n        </form>\n    </div>\n</div>\n";
     return __output.trim();
   };
   
@@ -7593,7 +7748,7 @@ voiceBase = (function(VB, $) {
   
   templates['transcript/transcriptBlock']  = templates['transcript/transcriptBlock.ejs'] = function(it) {
     var locals = it, __output = "";
-    ; var tabClass = (locals.tabView) ? 'vbs-tab' : ''; __output += "\n";; var resizingStyle = (!voiceBase.settings.showMore) ? 'vbs-no-showmore-btn' : ''; __output += "\n\n<div class=\"vbs-transcript-block ";; __output += escape(tabClass); __output += " ";; __output += escape(resizingStyle); __output += "\">\n    <div class=\"vbs-edit-mode-prewrapper\"></div>\n    <div class=\"vbs-section-header\">\n        <div class=\"vbs-section-title\">\n            <span class=\"vbs-section-name vbs-snh\">human transcript</span>\n            <span class=\"vbs-section-name vbs-snm\">machine transcript</span>\n        </div>\n\n        ";; if (locals.vbsButtons.orderTranscript) { ; __output += "\n        <div class=\"vbs-order-human-trans\" data-title=\"See Transcript Price & Options\">\n            <a href=\"#\" target=\"_blank\">Order Human Transcript</a>\n        </div>\n        ";; }; __output += "\n\n        <div class=\"vbs-section-btns\">\n            <ul class=\"vbs-clearfix\">\n                ";; if (locals.vbsButtons.downloadTranscript) { ; __output += "\n                <li><a href=\"#\" class=\"vbs-cloud-btn vbs-popup-btn\" data-title=\"Download Transcript\"></a>\n                    <div class=\"vbs-download-popup vbs-popup\">\n                        <div class=\"vbs-arrow\"></div>\n                        <h3>Download transcript</h3>\n                        <a href=\"#pdf\" class=\"vbs-donwload-pdf\" format=\"pdf\">TXT</a>\n                        <a href=\"#rtf\" class=\"vbs-donwload-rtf\" format=\"rtf\">DOC</a>\n                        <a href=\"#srt\" class=\"vbs-donwload-srt\" format=\"srt\">SRT</a>\n                        <a href=\"#docd\" class=\"vbs-donwload-docd\" format=\"docd\">DOC (time)</a>\n                    </div>\n                </li>\n                ";; }; __output += "\n\n                ";; if (locals.vbsButtons.edit) { ; __output += "\n                <li>\n                    <a href=\"#\" class=\"vbs-edit-btn\" data-title=\"Edit Transcript\"></a>\n                </li>\n                ";; }; __output += "\n\n                ";; if (locals.vbsButtons.print) { ; __output += "\n                <li>\n                    <a href=\"#\" class=\"vbs-print-btn\" data-title=\"Print Transcript\"></a>\n                </li>\n                ";; }; __output += "\n\n                ";; if (locals.vbsButtons.readermode) { ; __output += "\n                <li>\n                    <a href=\"#\" class=\"vbs-readermode-btn\" data-title=\"Reader Mode\"></a>\n                </li>\n                ";; }; __output += "\n\n            </ul>\n        </div>\n    </div>\n    <div class=\"vbs-section-body\">\n        <div class=\"vbs-transcript-prewrapper vbs-resizable\">\n            <div class=\"vbs-transcript-wrapper\"></div>\n        </div>\n\n        ";; if (voiceBase.settings.showMore) { ; __output += "\n        <div class=\"vbs-more-btn\">\n            <a href=\"#\">Show More...</a>\n        </div>\n        ";; }; __output += "\n\n    </div>\n</div>\n";
+    ; var tabClass = (locals.tabView) ? 'vbs-tab' : ''; __output += "\n";; var resizingStyle = (!voiceBase.settings.showMore) ? 'vbs-no-showmore-btn' : ''; __output += "\n\n<div class=\"vbs-transcript-block ";; __output += escape(tabClass); __output += " ";; __output += escape(resizingStyle); __output += "\">\n    <div class=\"vbs-edit-mode-prewrapper\"></div>\n    <div class=\"vbs-section-header\">\n        <div class=\"vbs-section-title\">\n            <span class=\"vbs-section-name vbs-snh\">human transcript</span>\n            <span class=\"vbs-section-name vbs-snm\">machine transcript</span>\n        </div>\n\n        ";; if (locals.vbsButtons.orderTranscript) { ; __output += "\n        <div class=\"vbs-order-human-trans\" data-title=\"See Transcript Price & Options\">\n            <a href=\"#\" target=\"_blank\">Order Human Transcript</a>\n        </div>\n        ";; }; __output += "\n\n        <div class=\"vbs-section-btns\">\n            <ul class=\"vbs-clearfix\">\n                ";; if (locals.vbsButtons.downloadTranscript) { ; __output += "\n                <li><a href=\"#\" class=\"vbs-cloud-btn vbs-popup-btn\" data-title=\"Download Transcript\"></a>\n                    <div class=\"vbs-download-popup vbs-popup\">\n                        <div class=\"vbs-arrow\"></div>\n                        <h3>Download transcript</h3>\n                        <a href=\"#pdf\" class=\"vbs-donwload-pdf\" format=\"pdf\">TXT</a>\n                        <a href=\"#rtf\" class=\"vbs-donwload-rtf\" format=\"rtf\">DOC</a>\n                        <a href=\"#srt\" class=\"vbs-donwload-srt\" format=\"srt\">SRT</a>\n                        <a href=\"#docd\" class=\"vbs-donwload-docd\" format=\"docd\">DOC (3 min)</a>\n                    </div>\n                </li>\n                ";; }; __output += "\n\n                ";; if (locals.vbsButtons.edit) { ; __output += "\n                <li>\n                    <a href=\"#\" class=\"vbs-edit-btn\" data-title=\"Edit Transcript\"></a>\n                </li>\n                ";; }; __output += "\n\n                ";; if (locals.vbsButtons.print) { ; __output += "\n                <li>\n                    <a href=\"#\" class=\"vbs-print-btn\" data-title=\"Print Transcript\"></a>\n                </li>\n                ";; }; __output += "\n\n                ";; if (locals.vbsButtons.readermode) { ; __output += "\n                <li>\n                    <a href=\"#\" class=\"vbs-readermode-btn\" data-title=\"Reader Mode\"></a>\n                </li>\n                ";; }; __output += "\n\n            </ul>\n        </div>\n    </div>\n    <div class=\"vbs-section-body\">\n        <div class=\"vbs-transcript-prewrapper vbs-resizable\">\n            <div class=\"vbs-transcript-wrapper\"></div>\n        </div>\n\n        ";; if (voiceBase.settings.showMore) { ; __output += "\n        <div class=\"vbs-more-btn\">\n            <a href=\"#\">Show More...</a>\n        </div>\n        ";; }; __output += "\n\n    </div>\n</div>\n";
     return __output.trim();
   };
   

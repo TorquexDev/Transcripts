@@ -28,7 +28,8 @@
 </style>
 
 
-<h2 style="display:inline-block">Torquex Media Player</h2><button id="helpbutton" class="help_btn" style="float:right; margin: 10px;"><i class="material-icons">help</i></button>
+<img id="createhelpbtn" src="~/images/if_help_36102.png" onmouseover="" alt="help" style="float:right; margin: 10px; cursor: pointer;" />
+<h2 style="display:inline-block">Torquex Media Player</h2>
 
 
     <div id="helpmodal" class="help_modal">
@@ -47,12 +48,13 @@
             <p><img src="~/images/print-icon.png" />&nbsp&nbsp This button allows you to print your transcript</p>
             <p><img src="~/images/reader-icon.png" />&nbsp&nbsp Reader Button maximizes your transcript and makes it easy for you to read</p>
             <div><img src="~/images/help_downloadTranscript.png" /><p>Click on the download transcript button to display the available formats and click on your desired format to download your transcript</p></div>            
+            <p>What is SRT?<br />Application can generate subtitles or closed captions for your video project, by allowing you to retrieve the transcript of your audio or video file using the SubRip Text (SRT) format.</p>
             
         </div>
     </div>
     <script type="text/javascript">
         var modal = document.getElementById('helpmodal');
-        var helpbtn = document.getElementById("helpbutton");
+        var helpbtn = document.getElementById("createhelpbtn");
         var span = document.getElementsByClassName("close")[0];
         helpbtn.onclick = function () {
             modal.style.display = "block";
@@ -73,12 +75,24 @@
 {
     <div style="padding:8px; align-content:center;"><b>Custom Vocabs Used : </b>@Html.DisplayFor(modelItem => Model.Vocabs)</div>
 }
+@{mediaType = Model.PlayFile.Substring(Model.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video";}
+
+
 <script type='text/javascript'>
             jQuery(document).ready(function() {
                 jwplayer('jwplayer').setup({
                     primary: "html5",
                     file: 'https://torquexstorage01.blob.core.windows.net/torquexmediaplayer/' + '@Html.DisplayFor(modelItem => Model.PlayFile)' ,
-                    width: '100%'
+                    width: '100%',
+                    @if (mediaType == "video")
+                    {
+                        <text>tracks: [{
+                            file: '/temp/' + '@ViewBag.srtFile',
+							label: "English",
+							kind: "captions",
+							"default": true
+                        }]</text>
+                    }
                 });
 
                 jQuery('#jwplayer').voicebase({
@@ -90,7 +104,6 @@
                     mediaId: '@Html.DisplayFor(modelItem => Model.mediaId)' ,
                     token: '_OjQif8F7lFp06d_f2FQPfQzL9cTpUuL0z_aMpy9YN2N_5F6S8bys5ZrfTQVqPoYaBy7FLbuXIo7XZ1zlXLLFQ',
                     localSearch: true,
-                    @{mediaType = Model.PlayFile.Substring(Model.PlayFile.Length - 3).ToLower() == "mp3" ? "audio" : "video" ;}
                     mediaTypeOverride: '@mediaType'
                 });
         });

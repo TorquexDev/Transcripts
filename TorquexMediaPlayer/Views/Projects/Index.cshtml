@@ -1,0 +1,60 @@
+﻿@model IEnumerable<TorquexMediaPlayer.Models.Project>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Your Units/Subjects</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Units/Subject
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DeptName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PageTitle)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CreateDate)
+        </th>
+        <th class="actionLinks"></th>
+        <th class="actionLinks"></th>
+        <th class="actionLinks"></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProjectName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DeptName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PageTitle)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CreateDate)
+        </td>
+        <td class="actionLinks">
+            @Html.ActionLink("Unit", "Unit", new { id = item.ID }, new { @class = "playLink" })
+        </td>
+        <td class="actionLinks">
+            |
+            @Html.ActionLink("Edit", "Edit", new { id = item.ID }, new { @class = "editLink" })
+        </td>
+        <td class="actionLinks">
+            |
+            @Html.ActionLink("Delete", "Delete", new { id = item.ID }, new { @class = "cancelLink" })
+        </td>
+    </tr>
+}
+
+</table>
